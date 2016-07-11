@@ -22,11 +22,11 @@
         </dependency>
 
         <!-- 3rd Party Dependencies -->
-        <!--<dependency>-->
-            <!--<groupId>org.codehaus.jackson</groupId>-->
-            <!--<artifactId>jackson-jaxrs</artifactId>-->
-            <!--<version>1.9.9</version>-->
-        <!--</dependency>-->
+        <dependency>
+            <groupId>org.codehaus.jackson</groupId>
+            <artifactId>jackson-jaxrs</artifactId>
+            <version>1.9.9</version>
+        </dependency>
 
         <dependency>
             <groupId>com.google.guava</groupId>

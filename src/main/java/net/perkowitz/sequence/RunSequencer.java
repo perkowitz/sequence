@@ -1,6 +1,10 @@
 package net.perkowitz.sequence;
 
 import com.google.common.collect.Maps;
+import net.thecodersbreakfast.lp4j.api.Launchpad;
+import net.thecodersbreakfast.lp4j.api.LaunchpadClient;
+import net.thecodersbreakfast.lp4j.midi.MidiDeviceConfiguration;
+import net.thecodersbreakfast.lp4j.midi.MidiLaunchpad;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -14,9 +18,7 @@ import javax.sound.midi.*;
 public class RunSequencer {
 
     private static String CONTROLLER_NAME_PROPERTY = "controller.name";
-    private static String DEFAULT_CONTROLLER_NAME = "Launchpad";
     private static String SEQUENCE_NAME_PROPERTY = "output.name";
-    private static String DEFAULT_SEQUENCE_NAME = "Whatever";
 
     private static Properties properties = null;
 
@@ -48,12 +50,18 @@ public class RunSequencer {
         String outputName = properties.getProperty(SEQUENCE_NAME_PROPERTY);
         MidiDevice sequenceOutput = MidiUtil.findMidiDevice(outputName, true, false);
         if (sequenceOutput == null) {
-//            System.err.printf("Unable to find sequence output device matching name: %s\n", outputName);
-//            System.exit(1);
+            System.err.printf("Unable to find sequence output device matching name: %s\n", outputName);
+            System.exit(1);
         }
 
         // create the sequencer
-        Sequencer sequencer = new Sequencer(controllerInput, controllerOutput, sequenceOutput);
+        Launchpad launchpad = new MidiLaunchpad(new MidiDeviceConfiguration(controllerInput, controllerOutput));
+        LaunchpadClient launchpadClient = launchpad.getClient();
+        SequencerDisplay sequencerDisplay = new LaunchpadDisplay(launchpadClient);
+        Sequencer sequencer = new Sequencer(
+                sequencerDisplay,
+                controllerInput, controllerOutput, sequenceOutput
+        );
 
     }
 

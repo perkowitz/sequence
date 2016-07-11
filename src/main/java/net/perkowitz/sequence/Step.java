@@ -8,7 +8,14 @@ import lombok.Setter;
  */
 public class Step {
 
+    @Getter private int index;
+    @Getter @Setter private boolean selected = false;
+
     @Getter @Setter private boolean on = false;
     @Getter @Setter private int velocity = 100;
+
+    public Step(int index) {
+        this.index = index;
+    }
 
 }

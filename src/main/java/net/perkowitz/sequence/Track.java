@@ -11,11 +11,21 @@ public class Track {
     @Getter @Setter private static int stepCount = 16;
     @Getter private Step[] steps;
 
-    public Track() {
+    @Getter private int index;
+    @Getter @Setter private boolean selected = false;
 
+    @Getter @Setter private int midiChannel = 0;
+    @Getter @Setter private int noteNumber = 60;
+    @Getter @Setter private boolean enabled = true;
+
+
+    public Track(int index) {
+
+        this.index = index;
         this.steps = new Step[stepCount];
         for (int i = 0; i < stepCount; i++) {
-            steps[i] = new Step();
+            steps[i] = new Step(i);
+            steps[i].setVelocity(100 + i);
         }
 
     }
