@@ -33,10 +33,6 @@ public class Sequencer extends LaunchpadListenerAdapter {
     private Map<SequencerDisplay.DisplayButton, SequencerDisplay.ButtonState> buttonStateMap = Maps.newHashMap();
 
     private Memory memory;
-//    private Session selectedSession;
-//    private Pattern selectedPattern;
-//    private Track selectedTrack;
-    private int selectedTrackNumber = 0;
     private int playingStepNumber = 0;
 
     // sequencer states
@@ -143,12 +139,18 @@ public class Sequencer extends LaunchpadListenerAdapter {
 
         // send the midi notes
         for (Track track : memory.getSelectedPattern().getTracks()) {
+            Step step = track.getStep(playingStepNumber);
+            if (step.isOn()) {
+                track.setPlaying(true);
+            }
             if (track.isEnabled()) {
-                Step step = track.getStep(playingStepNumber);
                 if (step.isOn()) {
                     sendMidiNote(track.getMidiChannel(), track.getNoteNumber(), step.getVelocity());
                 }
             }
+            display.displayTrack(track);
+            track.setPlaying(false);
+
         }
 
         // display new step
@@ -199,74 +201,6 @@ public class Sequencer extends LaunchpadListenerAdapter {
     }
 
 
-    /************************************************************************
-     * Launchpad display implementation
-     *
-     */
-//    private void displayTrack(int index, Track track, boolean selected) {
-//
-//        int x = index % 8;
-//        int y = TRACKS_MIN_ROW + index / 8;
-//        if (selected) {
-//            launchpadClient.setPadLight(Pad.at(x, y), COLOR_SELECTED, BackBufferOperation.NONE);
-//            for (int i = 0; i < Track.getStepCount(); i++) {
-//                displayStep(i, track.getStep(i));
-//            }
-//        } else {
-//            if (track.isEnabled()) {
-//                launchpadClient.setPadLight(Pad.at(x, y), COLOR_ENABLED, BackBufferOperation.NONE);
-//            } else {
-//                launchpadClient.setPadLight(Pad.at(x, y), COLOR_DISABLED, BackBufferOperation.NONE);
-//            }
-//
-//        }
-//
-//    }
-//
-//    private void displayStep(int index, Step step) {
-//
-//        int x = index % 8;
-//        int y = STEPS_MIN_ROW + index / 8;
-//        if (step.isOn()) {
-//            launchpadClient.setPadLight(Pad.at(x, y), COLOR_ENABLED, BackBufferOperation.NONE);
-//        } else {
-//            launchpadClient.setPadLight(Pad.at(x, y), COLOR_EMPTY, BackBufferOperation.NONE);
-//        }
-//
-//    }
-//
-//    public void initializeDisplay() {
-//
-//        // turn everything off
-//        launchpadClient.reset();
-//
-//        // turn off all buttons
-//        for (int x = 0; x < 8; x++) {
-////            launchpadClient.setButtonLight(Button.atTop(x), COLOR_EMPTY, BackBufferOperation.NONE);
-////            launchpadClient.setButtonLight(Button.atRight(x), COLOR_EMPTY, BackBufferOperation.NONE);
-//        }
-//        launchpadClient.setButtonLight(BUTTON_SELECT, COLOR_SELECTED_DIM, BackBufferOperation.NONE);
-//        launchpadClient.setButtonLight(BUTTON_PLAY, Color.of(0, 3), BackBufferOperation.NONE);
-//        launchpadClient.setButtonLight(BUTTON_EXIT, Color.of(3, 0), BackBufferOperation.NONE);
-//        launchpadClient.setButtonLight(BUTTON_SAVE, Color.of(1, 3), BackBufferOperation.NONE);
-//
-//        // turn off all pads
-//        for (int x = 0; x < 8; x++) {
-//            for (int y = 0; y < 8; y++) {
-////                launchpadClient.setPadLight(Pad.at(x, y), COLOR_EMPTY, BackBufferOperation.NONE);
-//            }
-//        }
-//
-//        // display the track section
-//        for (int y = TRACKS_MIN_ROW; y <= TRACKS_MAX_ROW; y++) {
-//            for (int x = 0; x < 8; x++) {
-//                launchpadClient.setPadLight(Pad.at(x, y), COLOR_SPLUNGE, BackBufferOperation.NONE);
-//            }
-//        }
-//        displayTrack(8, selectedTrack, true);
-//
-//    }
-
 
 
     /************************************************************************
@@ -287,7 +221,7 @@ public class Sequencer extends LaunchpadListenerAdapter {
                     display.displayTrack(memory.getSelectedTrack());
 
                     // select the new track
-                    selectedTrackNumber = trackNumber;
+                    int selectedTrackNumber = trackNumber;
                     Track selectedTrack = memory.getSelectedPattern().getTrack(selectedTrackNumber);
                     memory.setSelectedTrack(selectedTrack);
                     selectedTrack.setSelected(true);
@@ -309,6 +243,12 @@ public class Sequencer extends LaunchpadListenerAdapter {
                 display.displayStep(step);
 
             } else if (pad.equals(TRACK_SELECT_MODE)) {
+                if (trackSelectMode) {
+                    // if you press select mode a second time, it unselects the selected track (so no track is selected)
+                    memory.getSelectedTrack().setSelected(false);
+                    display.displayTrack(memory.getSelectedTrack());
+//                    display.clearSteps();
+                }
                 trackSelectMode = true;
                 display.displayButton(SequencerDisplay.DisplayButton.TRACK_MUTE_MODE, SequencerDisplay.ButtonState.DISABLED);
                 display.displayButton(SequencerDisplay.DisplayButton.TRACK_SELECT_MODE, SequencerDisplay.ButtonState.ENABLED);

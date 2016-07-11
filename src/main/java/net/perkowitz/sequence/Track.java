@@ -13,6 +13,7 @@ public class Track {
 
     @Getter private int index;
     @Getter @Setter private boolean selected = false;
+    @Getter @Setter private boolean playing = false;
 
     @Getter @Setter private int midiChannel = 0;
     @Getter @Setter private int noteNumber = 60;

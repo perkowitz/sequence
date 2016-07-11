@@ -36,7 +36,13 @@ public class LaunchpadDisplay implements SequencerDisplay {
 
         int x = getX(track.getIndex());
         int y = LaunchpadUtil.TRACKS_MIN_ROW + getY(track.getIndex());
-        if (track.isSelected()) {
+        if (track.isPlaying()) {
+            if (track.isEnabled()) {
+                launchpadClient.setPadLight(Pad.at(x, y), COLOR_PLAYING, BackBufferOperation.NONE);
+            } else {
+                launchpadClient.setPadLight(Pad.at(x, y), COLOR_SELECTED_DIM, BackBufferOperation.NONE);
+            }
+        } else if (track.isSelected()) {
             if (track.isEnabled()) {
                 launchpadClient.setPadLight(Pad.at(x, y), COLOR_SELECTED, BackBufferOperation.NONE);
             } else {
@@ -47,11 +53,10 @@ public class LaunchpadDisplay implements SequencerDisplay {
             }
         } else {
             if (track.isEnabled()) {
-                launchpadClient.setPadLight(Pad.at(x, y), COLOR_ENABLED, BackBufferOperation.NONE);
-            } else {
                 launchpadClient.setPadLight(Pad.at(x, y), COLOR_DISABLED, BackBufferOperation.NONE);
+            } else {
+                launchpadClient.setPadLight(Pad.at(x, y), COLOR_EMPTY, BackBufferOperation.NONE);
             }
-
         }
     }
 
@@ -66,6 +71,17 @@ public class LaunchpadDisplay implements SequencerDisplay {
             launchpadClient.setPadLight(Pad.at(x, y), COLOR_EMPTY, BackBufferOperation.NONE);
         }
     }
+
+    public void clearSteps() {
+        for (int index = 0; index < Track.getStepCount(); index++) {
+//            Step step = new Step(index);
+//            displayStep(step);
+            int x = getX(index);
+            int y = STEPS_MIN_ROW + getY(index);
+            launchpadClient.setPadLight(Pad.at(x, y), COLOR_EMPTY, BackBufferOperation.NONE);
+        }
+    }
+
 
     public void displayButton(DisplayButton displayButton, ButtonState buttonState) {
 

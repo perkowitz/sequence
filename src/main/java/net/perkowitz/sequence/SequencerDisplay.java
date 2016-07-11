@@ -12,8 +12,12 @@ public interface SequencerDisplay {
 
     public void initialize();
     public void displayAll(Memory memory, Map<DisplayButton, ButtonState> buttonStateMap);
+
     public void displayTrack(Track track);
+
     public void displayStep(Step step);
+    public void clearSteps();
+
     public void displayButton(DisplayButton displayButton, ButtonState buttonState);
     public void displayButtons(Map<DisplayButton, ButtonState> buttonStateMap);
 
