@@ -19,6 +19,9 @@ public class Track {
     @Getter @Setter private boolean enabled = true;
 
 
+    // only used for deserializing JSON; Track should always be created with an index
+    public Track() {}
+
     public Track(int index) {
 
         this.index = index;

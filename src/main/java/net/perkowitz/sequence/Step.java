@@ -14,6 +14,9 @@ public class Step {
     @Getter @Setter private boolean on = false;
     @Getter @Setter private int velocity = 100;
 
+    // only used for deserializing JSON; Step should always be created with an index
+    public Step() {}
+
     public Step(int index) {
         this.index = index;
     }

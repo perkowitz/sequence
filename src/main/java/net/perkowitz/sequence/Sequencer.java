@@ -69,12 +69,10 @@ public class Sequencer extends LaunchpadListenerAdapter {
             System.err.printf("%s\n", e.getStackTrace().toString());
         }
 
-        memory = new Memory();
-
-        // default to editing session 0, pattern 0, track 0
-        memory.setSelectedSession(memory.getSession(0));
-        memory.setSelectedPattern(memory.getSelectedSession().getPattern(0));
-        memory.setSelectedTrack(memory.getSelectedPattern().getTrack(0));
+        load();
+        if (memory == null) {
+            memory = new Memory();
+        }
 
         // initialize the state of the buttons
         buttonStateMap.put(SequencerDisplay.DisplayButton.PLAY, SequencerDisplay.ButtonState.DISABLED);
@@ -83,7 +81,6 @@ public class Sequencer extends LaunchpadListenerAdapter {
         buttonStateMap.put(SequencerDisplay.DisplayButton.TRACK_MUTE_MODE, SequencerDisplay.ButtonState.DISABLED);
         buttonStateMap.put(SequencerDisplay.DisplayButton.TRACK_SELECT_MODE, SequencerDisplay.ButtonState.ENABLED);
 
-        load();
         display.initialize();
         display.displayAll(memory, buttonStateMap);
         timedDisplay();
@@ -163,9 +160,8 @@ public class Sequencer extends LaunchpadListenerAdapter {
 
         try {
             objectMapper.writeValue(new File("sequencer.json"), memory);
-
-            String json = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(memory);
-            System.out.println(json);
+//            String json = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(memory);
+//            System.out.println(json);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -175,11 +171,11 @@ public class Sequencer extends LaunchpadListenerAdapter {
 
     private void load() {
 
-//        try {
-//            memory = objectMapper.readValue(new File("sequencer.json"), Memory.class);
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
+        try {
+            memory = objectMapper.readValue(new File("sequencer.json"), Memory.class);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
     }
 

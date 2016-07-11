@@ -23,6 +23,11 @@ public class Memory {
             sessions[i] = new Session();
         }
 
+        setSelectedSession(getSession(0));
+        setSelectedPattern(getSelectedSession().getPattern(0));
+        setSelectedTrack(getSelectedPattern().getTrack(0));
+        getSelectedTrack().setSelected(true);
+
     }
 
     public Session getSession(int index) {
