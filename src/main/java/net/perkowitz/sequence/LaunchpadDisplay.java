@@ -28,9 +28,49 @@ public class LaunchpadDisplay implements SequencerDisplay {
             displayTrack(track);
         }
 
-        displayButtons(buttonStateMap);
+        if (buttonStateMap != null) {
+            displayButtons(buttonStateMap);
+        }
 
     }
+
+    public void displayHelp() {
+
+        // pattern buttons are green
+        Color patternColor = COLOR_PLAYING;
+        for (int y = PATTERNS_MIN_ROW; y <= PATTERNS_MAX_ROW; y++) {
+            for (int x = 0; x < 8; x++) {
+                launchpadClient.setPadLight(Pad.at(x, y), patternColor, BackBufferOperation.NONE);
+            }
+        }
+        launchpadClient.setPadLight(TRACK_MUTE_MODE, patternColor, BackBufferOperation.NONE);
+        launchpadClient.setPadLight(TRACK_SELECT_MODE, patternColor, BackBufferOperation.NONE);
+
+        // track buttons are orange
+        Color trackColor = COLOR_SELECTED;
+        for (int y = TRACKS_MIN_ROW; y <= TRACKS_MAX_ROW; y++) {
+            for (int x = 0; x < 8; x++) {
+                launchpadClient.setPadLight(Pad.at(x, y), trackColor, BackBufferOperation.NONE);
+            }
+        }
+        launchpadClient.setPadLight(TRACK_MUTE_MODE, trackColor, BackBufferOperation.NONE);
+        launchpadClient.setPadLight(TRACK_SELECT_MODE, trackColor, BackBufferOperation.NONE);
+
+        // step buttons are red
+        Color stepColor = COLOR_ENABLED;
+        for (int y = STEPS_MIN_ROW; y <= STEPS_MAX_ROW; y++) {
+            for (int x = 0; x < 8; x++) {
+                launchpadClient.setPadLight(Pad.at(x, y), stepColor, BackBufferOperation.NONE);
+            }
+        }
+        // step mode buttons
+//        launchpadClient.setPadLight(TRACK_MUTE_MODE, stepColor, BackBufferOperation.NONE);
+        for (int x = 4; x < 8; x++) {
+            launchpadClient.setPadLight(Pad.at(x, 5), stepColor, BackBufferOperation.NONE);
+        }
+
+    }
+
 
     public void displayTrack(Track track) {
 
@@ -112,6 +152,35 @@ public class LaunchpadDisplay implements SequencerDisplay {
                 } else {
                     launchpadClient.setPadLight(LaunchpadUtil.TRACK_SELECT_MODE, COLOR_SELECTED_DIM, BackBufferOperation.NONE);
                 }
+                break;
+            case STEP_MUTE_MODE:
+                if (buttonState == ButtonState.ENABLED) {
+                    launchpadClient.setPadLight(LaunchpadUtil.STEP_MUTE_MODE, COLOR_ENABLED, BackBufferOperation.NONE);
+                } else {
+                    launchpadClient.setPadLight(LaunchpadUtil.STEP_MUTE_MODE, COLOR_DISABLED, BackBufferOperation.NONE);
+                }
+                break;
+            case STEP_VELOCITY_MODE:
+                if (buttonState == ButtonState.ENABLED) {
+                    launchpadClient.setPadLight(LaunchpadUtil.STEP_VELOCITY_MODE, COLOR_SELECTED, BackBufferOperation.NONE);
+                } else {
+                    launchpadClient.setPadLight(LaunchpadUtil.STEP_VELOCITY_MODE, COLOR_SELECTED_DIM, BackBufferOperation.NONE);
+                }
+                break;
+            case STEP_JUMP_MODE:
+                if (buttonState == ButtonState.ENABLED) {
+                    launchpadClient.setPadLight(LaunchpadUtil.STEP_JUMP_MODE, COLOR_PLAYING, BackBufferOperation.NONE);
+                } else {
+                    launchpadClient.setPadLight(LaunchpadUtil.STEP_JUMP_MODE, COLOR_PLAYING_DIM, BackBufferOperation.NONE);
+                }
+                break;
+
+            case STEP_PLAY_MODE:
+                Color color = COLOR_PLAYING_DIM ;
+                if (buttonState == ButtonState.ENABLED) {
+                    color = COLOR_PLAYING;
+                }
+                launchpadClient.setPadLight(LaunchpadUtil.STEP_PLAY_MODE, color, BackBufferOperation.NONE);
                 break;
         }
 

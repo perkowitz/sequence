@@ -20,6 +20,8 @@ import static net.perkowitz.sequence.LaunchpadUtil.*;
  */
 public class Sequencer extends LaunchpadListenerAdapter {
 
+    public enum StepMode { MUTE, VELOCITY, JUMP, PLAY }
+
     ObjectMapper objectMapper = new ObjectMapper();
 
     private SequencerDisplay display;
@@ -33,11 +35,13 @@ public class Sequencer extends LaunchpadListenerAdapter {
     private Map<SequencerDisplay.DisplayButton, SequencerDisplay.ButtonState> buttonStateMap = Maps.newHashMap();
 
     private Memory memory;
+    private int totalStepCount = 0;
     private int playingStepNumber = 0;
 
     // sequencer states
     private boolean playing = false;
     private boolean trackSelectMode = true;
+    private StepMode stepMode = StepMode.MUTE;
 
     private static CountDownLatch stop = new CountDownLatch(1);
 
@@ -76,6 +80,10 @@ public class Sequencer extends LaunchpadListenerAdapter {
         buttonStateMap.put(SequencerDisplay.DisplayButton.SAVE, SequencerDisplay.ButtonState.ENABLED);
         buttonStateMap.put(SequencerDisplay.DisplayButton.TRACK_MUTE_MODE, SequencerDisplay.ButtonState.DISABLED);
         buttonStateMap.put(SequencerDisplay.DisplayButton.TRACK_SELECT_MODE, SequencerDisplay.ButtonState.ENABLED);
+        buttonStateMap.put(SequencerDisplay.DisplayButton.STEP_MUTE_MODE, SequencerDisplay.ButtonState.ENABLED);
+        buttonStateMap.put(SequencerDisplay.DisplayButton.STEP_VELOCITY_MODE, SequencerDisplay.ButtonState.DISABLED);
+        buttonStateMap.put(SequencerDisplay.DisplayButton.STEP_JUMP_MODE, SequencerDisplay.ButtonState.DISABLED);
+        buttonStateMap.put(SequencerDisplay.DisplayButton.STEP_PLAY_MODE, SequencerDisplay.ButtonState.DISABLED);
 
         display.initialize();
         display.displayAll(memory, buttonStateMap);
@@ -118,7 +126,11 @@ public class Sequencer extends LaunchpadListenerAdapter {
         timer.scheduleAtFixedRate(new TimerTask() {
             public void run() {
                 if (playing) {
-                    advance(false);
+                    boolean andReset = false;
+                    if (totalStepCount % Track.getStepCount() == 0) {
+                        andReset = true;
+                    }
+                    advance(andReset);
                 }
             }
         }, 125, 125);
@@ -127,6 +139,8 @@ public class Sequencer extends LaunchpadListenerAdapter {
     }
 
     private void advance(boolean andReset) {
+
+        totalStepCount++;
 
         // reset display of current step
         launchpadClient.setPadLight(Pad.at(playingStepNumber % 8, playingStepNumber / 8), COLOR_EMPTY, BackBufferOperation.NONE);
@@ -239,8 +253,20 @@ public class Sequencer extends LaunchpadListenerAdapter {
                 // pressing a step pad
                 int stepNumber = pad.getX() + (pad.getY() - STEPS_MIN_ROW) * 8;
                 Step step = memory.getSelectedTrack().getStep(stepNumber);
-                step.setOn(!step.isOn());
-                display.displayStep(step);
+                if (stepMode == StepMode.MUTE) {
+                    step.setOn(!step.isOn());
+                    display.displayStep(step);
+                } else if (stepMode == StepMode.JUMP) {
+                    playingStepNumber = (stepNumber + (Track.getStepCount() - 1)) % Track.getStepCount();
+                } else if (stepMode == StepMode.PLAY) {
+                    Track track = memory.getSelectedPattern().getTrack(stepNumber);
+                    sendMidiNote(track.getMidiChannel(), track.getNoteNumber(), 100);
+                }
+
+            } else if (pad.equals(TRACK_MUTE_MODE)) {
+                trackSelectMode = false;
+                display.displayButton(SequencerDisplay.DisplayButton.TRACK_MUTE_MODE, SequencerDisplay.ButtonState.ENABLED);
+                display.displayButton(SequencerDisplay.DisplayButton.TRACK_SELECT_MODE, SequencerDisplay.ButtonState.DISABLED);
 
             } else if (pad.equals(TRACK_SELECT_MODE)) {
                 if (trackSelectMode) {
@@ -253,10 +279,34 @@ public class Sequencer extends LaunchpadListenerAdapter {
                 display.displayButton(SequencerDisplay.DisplayButton.TRACK_MUTE_MODE, SequencerDisplay.ButtonState.DISABLED);
                 display.displayButton(SequencerDisplay.DisplayButton.TRACK_SELECT_MODE, SequencerDisplay.ButtonState.ENABLED);
 
-            } else if (pad.equals(TRACK_MUTE_MODE)) {
-                trackSelectMode = false;
-                display.displayButton(SequencerDisplay.DisplayButton.TRACK_MUTE_MODE, SequencerDisplay.ButtonState.ENABLED);
-                display.displayButton(SequencerDisplay.DisplayButton.TRACK_SELECT_MODE, SequencerDisplay.ButtonState.DISABLED);
+            } else if (pad.equals(STEP_MUTE_MODE)) {
+                stepMode = StepMode.MUTE;
+                display.displayButton(SequencerDisplay.DisplayButton.STEP_MUTE_MODE, SequencerDisplay.ButtonState.ENABLED);
+                display.displayButton(SequencerDisplay.DisplayButton.STEP_VELOCITY_MODE, SequencerDisplay.ButtonState.DISABLED);
+                display.displayButton(SequencerDisplay.DisplayButton.STEP_JUMP_MODE, SequencerDisplay.ButtonState.DISABLED);
+                display.displayButton(SequencerDisplay.DisplayButton.STEP_PLAY_MODE, SequencerDisplay.ButtonState.DISABLED);
+
+            } else if (pad.equals(STEP_VELOCITY_MODE)) {
+                stepMode = stepMode.VELOCITY;
+                display.displayButton(SequencerDisplay.DisplayButton.STEP_MUTE_MODE, SequencerDisplay.ButtonState.DISABLED);
+                display.displayButton(SequencerDisplay.DisplayButton.STEP_VELOCITY_MODE, SequencerDisplay.ButtonState.ENABLED);
+                display.displayButton(SequencerDisplay.DisplayButton.STEP_JUMP_MODE, SequencerDisplay.ButtonState.DISABLED);
+                display.displayButton(SequencerDisplay.DisplayButton.STEP_PLAY_MODE, SequencerDisplay.ButtonState.DISABLED);
+
+            } else if (pad.equals(STEP_JUMP_MODE)) {
+                stepMode = stepMode.JUMP;
+                display.displayButton(SequencerDisplay.DisplayButton.STEP_MUTE_MODE, SequencerDisplay.ButtonState.DISABLED);
+                display.displayButton(SequencerDisplay.DisplayButton.STEP_VELOCITY_MODE, SequencerDisplay.ButtonState.DISABLED);
+                display.displayButton(SequencerDisplay.DisplayButton.STEP_JUMP_MODE, SequencerDisplay.ButtonState.ENABLED);
+                display.displayButton(SequencerDisplay.DisplayButton.STEP_PLAY_MODE, SequencerDisplay.ButtonState.DISABLED);
+
+            } else if (pad.equals(STEP_PLAY_MODE)) {
+                stepMode = stepMode.PLAY;
+                display.displayButton(SequencerDisplay.DisplayButton.STEP_MUTE_MODE, SequencerDisplay.ButtonState.DISABLED);
+                display.displayButton(SequencerDisplay.DisplayButton.STEP_VELOCITY_MODE, SequencerDisplay.ButtonState.DISABLED);
+                display.displayButton(SequencerDisplay.DisplayButton.STEP_JUMP_MODE, SequencerDisplay.ButtonState.DISABLED);
+                display.displayButton(SequencerDisplay.DisplayButton.STEP_PLAY_MODE, SequencerDisplay.ButtonState.ENABLED);
+
             }
 
 
@@ -280,6 +330,8 @@ public class Sequencer extends LaunchpadListenerAdapter {
             shutdown();
         } else if (button.equals(BUTTON_SAVE)) {
             save();
+        } else if (button.equals(BUTTON_HELP)) {
+            display.displayHelp();
         }
     }
 
@@ -287,8 +339,10 @@ public class Sequencer extends LaunchpadListenerAdapter {
     @Override
     public void onButtonReleased(Button button, long timestamp) {
 
+        if (button.equals(BUTTON_HELP)) {
+            display.displayAll(memory, null);
+        }
     }
-
 
 
 }
