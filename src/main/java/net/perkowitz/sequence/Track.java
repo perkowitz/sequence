@@ -29,7 +29,7 @@ public class Track {
         this.steps = new Step[stepCount];
         for (int i = 0; i < stepCount; i++) {
             steps[i] = new Step(i);
-            steps[i].setVelocity(100 + i);
+            steps[i].setVelocity(95);
         }
 
     }

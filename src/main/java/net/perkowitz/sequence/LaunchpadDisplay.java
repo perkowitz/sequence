@@ -37,7 +37,7 @@ public class LaunchpadDisplay implements SequencerDisplay {
     public void displayHelp() {
 
         // pattern buttons are green
-        Color patternColor = COLOR_PLAYING;
+        Color patternColor = COLOR_PLAYING_DIM;
         for (int y = PATTERNS_MIN_ROW; y <= PATTERNS_MAX_ROW; y++) {
             for (int x = 0; x < 8; x++) {
                 launchpadClient.setPadLight(Pad.at(x, y), patternColor, BackBufferOperation.NONE);
@@ -47,7 +47,7 @@ public class LaunchpadDisplay implements SequencerDisplay {
         launchpadClient.setPadLight(TRACK_SELECT_MODE, patternColor, BackBufferOperation.NONE);
 
         // track buttons are orange
-        Color trackColor = COLOR_SELECTED;
+        Color trackColor = COLOR_SELECTED_DIM;
         for (int y = TRACKS_MIN_ROW; y <= TRACKS_MAX_ROW; y++) {
             for (int x = 0; x < 8; x++) {
                 launchpadClient.setPadLight(Pad.at(x, y), trackColor, BackBufferOperation.NONE);
@@ -57,17 +57,17 @@ public class LaunchpadDisplay implements SequencerDisplay {
         launchpadClient.setPadLight(TRACK_SELECT_MODE, trackColor, BackBufferOperation.NONE);
 
         // step buttons are red
-        Color stepColor = COLOR_ENABLED;
+        Color stepColor = COLOR_DISABLED;
         for (int y = STEPS_MIN_ROW; y <= STEPS_MAX_ROW; y++) {
             for (int x = 0; x < 8; x++) {
                 launchpadClient.setPadLight(Pad.at(x, y), stepColor, BackBufferOperation.NONE);
             }
         }
         // step mode buttons
-//        launchpadClient.setPadLight(TRACK_MUTE_MODE, stepColor, BackBufferOperation.NONE);
-        for (int x = 4; x < 8; x++) {
-            launchpadClient.setPadLight(Pad.at(x, 5), stepColor, BackBufferOperation.NONE);
-        }
+        launchpadClient.setPadLight(STEP_MUTE_MODE, stepColor, BackBufferOperation.NONE);
+        launchpadClient.setPadLight(STEP_VELOCITY_MODE, stepColor, BackBufferOperation.NONE);
+        launchpadClient.setPadLight(STEP_JUMP_MODE, stepColor, BackBufferOperation.NONE);
+        launchpadClient.setPadLight(STEP_PLAY_MODE, stepColor, BackBufferOperation.NONE);
 
     }
 
@@ -190,6 +190,21 @@ public class LaunchpadDisplay implements SequencerDisplay {
         for (Map.Entry<DisplayButton, ButtonState> entry : buttonStateMap.entrySet()) {
             displayButton(entry.getKey(), entry.getValue());
         }
+    }
+
+    public void displayValue(int value) {
+
+        int buttons = (value * 8) / 128;
+        System.out.printf("Display value: %d, %d\n", value, buttons);
+
+        for (int b = 0; b < 8; b++) {
+            Color color = COLOR_EMPTY;
+            if (b <= buttons) {
+                color = COLOR_DISABLED;
+            }
+            launchpadClient.setButtonLight(Button.atRight(7-b), color, BackBufferOperation.NONE);
+        }
+
     }
 
 

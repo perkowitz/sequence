@@ -26,4 +26,6 @@ public interface SequencerDisplay {
     public void displayButton(DisplayButton displayButton, ButtonState buttonState);
     public void displayButtons(Map<DisplayButton, ButtonState> buttonStateMap);
 
+    public void displayValue(int value);
+
 }

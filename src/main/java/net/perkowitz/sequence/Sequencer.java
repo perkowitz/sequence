@@ -87,7 +87,8 @@ public class Sequencer extends LaunchpadListenerAdapter {
 
         display.initialize();
         display.displayAll(memory, buttonStateMap);
-        timedDisplay();
+//        display.displayHelp();
+        startTimer();
 
         stop.await();
 
@@ -119,7 +120,7 @@ public class Sequencer extends LaunchpadListenerAdapter {
         playingStepNumber = Track.getStepCount()-1;
     }
 
-    public void timedDisplay() {
+    public void startTimer() {
 
         Timer timer = new Timer();
 
@@ -256,8 +257,13 @@ public class Sequencer extends LaunchpadListenerAdapter {
                 if (stepMode == StepMode.MUTE) {
                     step.setOn(!step.isOn());
                     display.displayStep(step);
+                    memory.setSelectedStep(step);
+                    display.displayValue(step.getVelocity());
                 } else if (stepMode == StepMode.JUMP) {
                     playingStepNumber = (stepNumber + (Track.getStepCount() - 1)) % Track.getStepCount();
+                } else if (stepMode == StepMode.VELOCITY) {
+                    memory.setSelectedStep(step);
+                    display.displayValue(step.getVelocity());
                 } else if (stepMode == StepMode.PLAY) {
                     Track track = memory.getSelectedPattern().getTrack(stepNumber);
                     sendMidiNote(track.getMidiChannel(), track.getNoteNumber(), 100);
@@ -285,6 +291,7 @@ public class Sequencer extends LaunchpadListenerAdapter {
                 display.displayButton(SequencerDisplay.DisplayButton.STEP_VELOCITY_MODE, SequencerDisplay.ButtonState.DISABLED);
                 display.displayButton(SequencerDisplay.DisplayButton.STEP_JUMP_MODE, SequencerDisplay.ButtonState.DISABLED);
                 display.displayButton(SequencerDisplay.DisplayButton.STEP_PLAY_MODE, SequencerDisplay.ButtonState.DISABLED);
+                display.displayTrack(memory.getSelectedTrack());
 
             } else if (pad.equals(STEP_VELOCITY_MODE)) {
                 stepMode = stepMode.VELOCITY;
@@ -292,6 +299,7 @@ public class Sequencer extends LaunchpadListenerAdapter {
                 display.displayButton(SequencerDisplay.DisplayButton.STEP_VELOCITY_MODE, SequencerDisplay.ButtonState.ENABLED);
                 display.displayButton(SequencerDisplay.DisplayButton.STEP_JUMP_MODE, SequencerDisplay.ButtonState.DISABLED);
                 display.displayButton(SequencerDisplay.DisplayButton.STEP_PLAY_MODE, SequencerDisplay.ButtonState.DISABLED);
+                display.displayTrack(memory.getSelectedTrack());
 
             } else if (pad.equals(STEP_JUMP_MODE)) {
                 stepMode = stepMode.JUMP;
@@ -299,6 +307,8 @@ public class Sequencer extends LaunchpadListenerAdapter {
                 display.displayButton(SequencerDisplay.DisplayButton.STEP_VELOCITY_MODE, SequencerDisplay.ButtonState.DISABLED);
                 display.displayButton(SequencerDisplay.DisplayButton.STEP_JUMP_MODE, SequencerDisplay.ButtonState.ENABLED);
                 display.displayButton(SequencerDisplay.DisplayButton.STEP_PLAY_MODE, SequencerDisplay.ButtonState.DISABLED);
+                memory.setSelectedStep(null);
+                display.clearSteps();
 
             } else if (pad.equals(STEP_PLAY_MODE)) {
                 stepMode = stepMode.PLAY;
@@ -306,6 +316,8 @@ public class Sequencer extends LaunchpadListenerAdapter {
                 display.displayButton(SequencerDisplay.DisplayButton.STEP_VELOCITY_MODE, SequencerDisplay.ButtonState.DISABLED);
                 display.displayButton(SequencerDisplay.DisplayButton.STEP_JUMP_MODE, SequencerDisplay.ButtonState.DISABLED);
                 display.displayButton(SequencerDisplay.DisplayButton.STEP_PLAY_MODE, SequencerDisplay.ButtonState.ENABLED);
+                memory.setSelectedStep(null);
+                display.clearSteps();
 
             }
 
@@ -332,6 +344,14 @@ public class Sequencer extends LaunchpadListenerAdapter {
             save();
         } else if (button.equals(BUTTON_HELP)) {
             display.displayHelp();
+        } else if (button.isRightButton()) {
+            System.out.printf("Right button %d\n", button.getCoordinate());
+            if (memory.getSelectedStep() != null) {
+                int velocity = ((8-button.getCoordinate())*16) - 1;
+                System.out.printf("Velocity %d\n", velocity);
+                memory.getSelectedStep().setVelocity(velocity);
+                display.displayValue(velocity);
+            }
         }
     }
 
