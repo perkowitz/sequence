@@ -15,6 +15,7 @@ public class MidiUtil {
     public static MidiDevice findMidiDevice(String deviceName, boolean receive, boolean transmit) {
 
         if (midiDeviceInfos == null) {
+            System.out.println("Loading device info..");
             midiDeviceInfos = MidiSystem.getMidiDeviceInfo();
 //            for (int i = 0; i < midiDeviceInfos.length; i++) {
 //                System.out.printf("Found midi device: %s\n", midiDeviceInfos[i].getName());
@@ -23,6 +24,7 @@ public class MidiUtil {
 
         MidiDevice targetDevice = null;
 
+        System.out.println("Checking for device name..");
         try {
             for (int i = 0; i < midiDeviceInfos.length; i++) {
                 MidiDevice device = MidiSystem.getMidiDevice(midiDeviceInfos[i]);
