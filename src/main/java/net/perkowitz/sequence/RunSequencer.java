@@ -1,6 +1,8 @@
 package net.perkowitz.sequence;
 
-import com.google.common.collect.Maps;
+import net.perkowitz.sequence.launchpad.LaunchpadController;
+import net.perkowitz.sequence.launchpad.LaunchpadDisplay;
+import net.perkowitz.sequence.models.*;
 import net.thecodersbreakfast.lp4j.api.Launchpad;
 import net.thecodersbreakfast.lp4j.api.LaunchpadClient;
 import net.thecodersbreakfast.lp4j.midi.MidiDeviceConfiguration;
@@ -9,9 +11,7 @@ import net.thecodersbreakfast.lp4j.midi.MidiLaunchpad;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Map;
 import java.util.Properties;
-import java.util.concurrent.CountDownLatch;
 import javax.sound.midi.*;
 
 
@@ -31,7 +31,7 @@ public class RunSequencer {
         Memory.setSessionCount(new Integer((String)properties.get("sessions")));
         Session.setPatternCount(new Integer((String)properties.get("patterns")));
         Pattern.setTrackCount(new Integer((String) properties.get("tracks")));
-        Track.setStepCount(16);
+        net.perkowitz.sequence.models.Track.setStepCount(16);
 
         // find the controller midi device
         String controllerName = properties.getProperty(CONTROLLER_NAME_PROPERTY);
@@ -54,14 +54,23 @@ public class RunSequencer {
             System.exit(1);
         }
 
+        try {
+
+            Launchpad launchpad = new MidiLaunchpad(new MidiDeviceConfiguration(controllerInput, controllerOutput));
+            LaunchpadClient launchpadClient = launchpad.getClient();
+            SequencerDisplay launchpadDisplay = new LaunchpadDisplay(launchpadClient);
+            LaunchpadController launchpadController = new LaunchpadController();
+            launchpad.setListener(launchpadController);
+
+            Sequencer sequencer = new Sequencer(launchpadController, launchpadDisplay, sequenceOutput);
+
+        } catch (MidiUnavailableException e) {
+            System.err.printf("%s\n", e.getStackTrace().toString());
+        }
+
+
+
         // create the sequencer
-        Launchpad launchpad = new MidiLaunchpad(new MidiDeviceConfiguration(controllerInput, controllerOutput));
-        LaunchpadClient launchpadClient = launchpad.getClient();
-        SequencerDisplay sequencerDisplay = new LaunchpadDisplay(launchpadClient);
-        Sequencer sequencer = new Sequencer(
-                sequencerDisplay,
-                controllerInput, controllerOutput, sequenceOutput
-        );
 
     }
 

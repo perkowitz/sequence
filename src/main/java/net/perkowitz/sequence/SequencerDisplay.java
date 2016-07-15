@@ -1,5 +1,9 @@
 package net.perkowitz.sequence;
 
+import net.perkowitz.sequence.models.Memory;
+import net.perkowitz.sequence.models.Step;
+import net.perkowitz.sequence.models.Track;
+
 import java.util.Map;
 
 /**

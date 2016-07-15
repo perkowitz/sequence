@@ -1,4 +1,4 @@
-package net.perkowitz.sequence;
+package net.perkowitz.sequence.launchpad;
 
 import net.thecodersbreakfast.lp4j.api.Button;
 import net.thecodersbreakfast.lp4j.api.Color;

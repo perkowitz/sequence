@@ -1,4 +1,4 @@
-package net.perkowitz.sequence;
+package net.perkowitz.sequence.models;
 
 import lombok.Getter;
 import lombok.Setter;
