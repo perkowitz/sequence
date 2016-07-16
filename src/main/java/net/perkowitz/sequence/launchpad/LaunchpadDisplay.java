@@ -9,6 +9,8 @@ import net.thecodersbreakfast.lp4j.api.*;
 
 import java.util.Map;
 
+import static net.perkowitz.sequence.launchpad.LaunchpadUtil.*;
+
 /**
  * Created by optic on 7/10/16.
  */
@@ -39,6 +41,14 @@ public class LaunchpadDisplay implements SequencerDisplay {
 
     public void displayHelp() {
 
+        // session buttons are yellow
+        Color sessionColor = Color.of(1,2);
+        for (int y = SESSIONS_MIN_ROW; y <= SESSIONS_MAX_ROW; y++) {
+            for (int x = 0; x < 8; x++) {
+                launchpadClient.setPadLight(Pad.at(x, y), sessionColor, BackBufferOperation.NONE);
+            }
+        }
+
         // pattern buttons are green
         Color patternColor = LaunchpadUtil.COLOR_PLAYING_DIM;
         for (int y = LaunchpadUtil.PATTERNS_MIN_ROW; y <= LaunchpadUtil.PATTERNS_MAX_ROW; y++) {
@@ -61,7 +71,7 @@ public class LaunchpadDisplay implements SequencerDisplay {
 
         // step buttons are red
         Color stepColor = LaunchpadUtil.COLOR_DISABLED;
-        for (int y = LaunchpadUtil.STEPS_MIN_ROW; y <= LaunchpadUtil.STEPS_MAX_ROW; y++) {
+        for (int y = STEPS_MIN_ROW; y <= LaunchpadUtil.STEPS_MAX_ROW; y++) {
             for (int x = 0; x < 8; x++) {
                 launchpadClient.setPadLight(Pad.at(x, y), stepColor, BackBufferOperation.NONE);
             }
@@ -105,11 +115,12 @@ public class LaunchpadDisplay implements SequencerDisplay {
 
     public void displayStep(Step step) {
         int x = getX(step.getIndex());
-        int y = LaunchpadUtil.STEPS_MIN_ROW + getY(step.getIndex());
-        if (step.isSelected()) {
-            launchpadClient.setPadLight(Pad.at(x, y), LaunchpadUtil.COLOR_SELECTED, BackBufferOperation.NONE);
-        } else if (step.isOn()) {
-            launchpadClient.setPadLight(Pad.at(x, y), LaunchpadUtil.COLOR_ENABLED, BackBufferOperation.NONE);
+        int y = STEPS_MIN_ROW + getY(step.getIndex());
+//        if (step.isSelected()) {
+//            launchpadClient.setPadLight(Pad.at(x, y), COLOR_SELECTED, BackBufferOperation.NONE);
+//        } else if (step.isOn()) {
+        if (step.isOn()) {
+            launchpadClient.setPadLight(Pad.at(x, y), COLOR_ENABLED, BackBufferOperation.NONE);
         } else {
             launchpadClient.setPadLight(Pad.at(x, y), LaunchpadUtil.COLOR_EMPTY, BackBufferOperation.NONE);
         }
@@ -120,11 +131,16 @@ public class LaunchpadDisplay implements SequencerDisplay {
 //            Step step = new Step(index);
 //            displayStep(step);
             int x = getX(index);
-            int y = LaunchpadUtil.STEPS_MIN_ROW + getY(index);
+            int y = STEPS_MIN_ROW + getY(index);
             launchpadClient.setPadLight(Pad.at(x, y), LaunchpadUtil.COLOR_EMPTY, BackBufferOperation.NONE);
         }
     }
 
+    public void displayPlayingStep(int stepNumber) {
+        int x = getX(stepNumber);
+        int y = STEPS_MIN_ROW + getY(stepNumber);
+        launchpadClient.setPadLight(Pad.at(x, y), COLOR_PLAYING, BackBufferOperation.NONE);
+    }
 
     public void displayButton(DisplayButton displayButton, ButtonState buttonState) {
 
@@ -137,14 +153,14 @@ public class LaunchpadDisplay implements SequencerDisplay {
                 }
                 break;
             case EXIT:
-                launchpadClient.setButtonLight(LaunchpadUtil.BUTTON_EXIT, LaunchpadUtil.COLOR_ENABLED, BackBufferOperation.NONE);
+                launchpadClient.setButtonLight(LaunchpadUtil.BUTTON_EXIT, COLOR_ENABLED, BackBufferOperation.NONE);
                 break;
             case SAVE:
-                launchpadClient.setButtonLight(LaunchpadUtil.BUTTON_SAVE, LaunchpadUtil.COLOR_ENABLED, BackBufferOperation.NONE);
+                launchpadClient.setButtonLight(LaunchpadUtil.BUTTON_SAVE, COLOR_ENABLED, BackBufferOperation.NONE);
                 break;
             case TRACK_MUTE_MODE:
                 if (buttonState == ButtonState.ENABLED) {
-                    launchpadClient.setPadLight(LaunchpadUtil.TRACK_MUTE_MODE, LaunchpadUtil.COLOR_ENABLED, BackBufferOperation.NONE);
+                    launchpadClient.setPadLight(LaunchpadUtil.TRACK_MUTE_MODE, COLOR_ENABLED, BackBufferOperation.NONE);
                 } else {
                     launchpadClient.setPadLight(LaunchpadUtil.TRACK_MUTE_MODE, LaunchpadUtil.COLOR_DISABLED, BackBufferOperation.NONE);
                 }
@@ -158,7 +174,7 @@ public class LaunchpadDisplay implements SequencerDisplay {
                 break;
             case STEP_MUTE_MODE:
                 if (buttonState == ButtonState.ENABLED) {
-                    launchpadClient.setPadLight(LaunchpadUtil.STEP_MUTE_MODE, LaunchpadUtil.COLOR_ENABLED, BackBufferOperation.NONE);
+                    launchpadClient.setPadLight(LaunchpadUtil.STEP_MUTE_MODE, COLOR_ENABLED, BackBufferOperation.NONE);
                 } else {
                     launchpadClient.setPadLight(LaunchpadUtil.STEP_MUTE_MODE, LaunchpadUtil.COLOR_DISABLED, BackBufferOperation.NONE);
                 }
@@ -198,7 +214,6 @@ public class LaunchpadDisplay implements SequencerDisplay {
     public void displayValue(int value) {
 
         int buttons = (value * 8) / 128;
-        System.out.printf("Display value: %d, %d\n", value, buttons);
 
         for (int b = 0; b < 8; b++) {
             Color color = LaunchpadUtil.COLOR_EMPTY;

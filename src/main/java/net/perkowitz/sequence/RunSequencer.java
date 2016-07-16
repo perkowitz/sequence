@@ -25,15 +25,19 @@ public class RunSequencer {
 
     public static void main(String args[]) throws Exception {
 
-        properties = getProperties();
+        // load settings
+        System.out.println("Getting app settings..");
+        properties = getProperties("sequence.properties");
 
         // set all the counts of sessions, patterns, tracks, steps
+        System.out.println("Setting memory sizes..");
         Memory.setSessionCount(new Integer((String)properties.get("sessions")));
         Session.setPatternCount(new Integer((String)properties.get("patterns")));
         Pattern.setTrackCount(new Integer((String) properties.get("tracks")));
         net.perkowitz.sequence.models.Track.setStepCount(16);
 
         // find the controller midi device
+        System.out.println("Finding controller device..");
         String controllerName = properties.getProperty(CONTROLLER_NAME_PROPERTY);
         MidiDevice controllerInput = MidiUtil.findMidiDevice(controllerName, false, true);
         MidiDevice controllerOutput = MidiUtil.findMidiDevice(controllerName, true, false);
@@ -47,6 +51,7 @@ public class RunSequencer {
         }
 
         // find the midi device for sequencer output
+        System.out.println("Finding output device..");
         String outputName = properties.getProperty(SEQUENCE_NAME_PROPERTY);
         MidiDevice sequenceOutput = MidiUtil.findMidiDevice(outputName, true, false);
         if (sequenceOutput == null) {
@@ -68,26 +73,21 @@ public class RunSequencer {
             System.err.printf("%s\n", e.getStackTrace().toString());
         }
 
-
-
-        // create the sequencer
-
     }
 
 
-    private static Properties getProperties() throws IOException {
+    private static Properties getProperties(String filename) throws IOException {
 
         InputStream inputStream = null;
         try {
             Properties properties = new Properties();
-            String propFileName = "sequence.properties";
 
-            inputStream = RunSequencer.class.getClassLoader().getResourceAsStream(propFileName);
+            inputStream = RunSequencer.class.getClassLoader().getResourceAsStream(filename);
 
             if (inputStream != null) {
                 properties.load(inputStream);
             } else {
-                throw new FileNotFoundException("property file '" + propFileName + "' not found in the classpath");
+                throw new FileNotFoundException("property file '" + filename + "' not found in the classpath");
             }
 
             return properties;

@@ -2,6 +2,7 @@ package net.perkowitz.sequence;
 
 import com.google.common.collect.Maps;
 import net.perkowitz.sequence.models.*;
+import net.perkowitz.sequence.models.Track;
 import net.thecodersbreakfast.lp4j.api.*;
 import org.codehaus.jackson.map.ObjectMapper;
 
@@ -53,16 +54,18 @@ public class Sequencer implements SequencerInterface {
         this.sequenceOutput = sequenceOutput;
         this.sequenceReceiver = sequenceOutput.getReceiver();
 
-        load();
+//        load();
         if (memory == null) {
             memory = new Memory();
+            memory.select(memory.getSelectedPattern().getTrack(8));
         }
 
         display.initialize();
+        display.displayHelp();
+        Thread.sleep(1000);
         display.displayAll(memory, buttonStateMap);
-//        display.displayHelp();
-        startTimer();
 
+        startTimer();
         stop.await();
 
     }
@@ -233,8 +236,7 @@ public class Sequencer implements SequencerInterface {
             display.displayButton(SequencerDisplay.DisplayButton.PLAY, SequencerDisplay.ButtonState.ENABLED);
         } else {
             display.displayButton(SequencerDisplay.DisplayButton.PLAY, SequencerDisplay.ButtonState.DISABLED);
-            // TODO deal with this somehow
-//            launchpadClient.setPadLight(Pad.at(playingStepNumber % 8, playingStepNumber / 8), COLOR_EMPTY, BackBufferOperation.NONE);
+            totalStepCount = 0;
         }
         playingStepNumber = net.perkowitz.sequence.models.Track.getStepCount()-1;
     }
@@ -258,18 +260,34 @@ public class Sequencer implements SequencerInterface {
 
     }
 
+    private void advancePlayStep() {
+        setPlayStep(playingStepNumber+1);
+    }
+
+    private void setPlayStep(int stepNumber) {
+
+        // reset current step to normal appearance
+        // NB: assumes that the play steps are always displayed using the step buttons
+        int oldStepNumber = playingStepNumber;
+        display.displayStep(memory.getSelectedTrack().getStep(oldStepNumber));
+
+        // move the playing step and display it
+        playingStepNumber = (stepNumber + Track.getStepCount()) % Track.getStepCount();
+        display.displayPlayingStep(playingStepNumber);
+
+
+    }
+
     private void advance(boolean andReset) {
 
         totalStepCount++;
 
-        // reset display of current step
-//        launchpadClient.setPadLight(Pad.at(playingStepNumber % 8, playingStepNumber / 8), COLOR_EMPTY, BackBufferOperation.NONE);
-
+        // determine the new step number and display it
+        int newStepNumber = playingStepNumber + 1;
         if (andReset) {
-            playingStepNumber = 0;
-        } else {
-            playingStepNumber = (playingStepNumber + 1) % net.perkowitz.sequence.models.Track.getStepCount();
+            newStepNumber = 0;
         }
+        setPlayStep(newStepNumber);
 
         // send the midi notes
         for (net.perkowitz.sequence.models.Track track : memory.getSelectedPattern().getTracks()) {
@@ -286,9 +304,6 @@ public class Sequencer implements SequencerInterface {
             track.setPlaying(false);
 
         }
-
-        // display new step
-//        launchpadClient.setPadLight(Pad.at(playingStepNumber % 8, playingStepNumber / 8), COLOR_PLAYING, BackBufferOperation.NONE);
 
     }
 
@@ -333,5 +348,6 @@ public class Sequencer implements SequencerInterface {
         }
 
     }
+
 
 }

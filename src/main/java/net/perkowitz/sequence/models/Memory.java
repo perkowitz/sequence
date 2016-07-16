@@ -23,15 +23,49 @@ public class Memory {
             sessions[i] = new Session();
         }
 
-        setSelectedSession(getSession(0));
-        setSelectedPattern(getSelectedSession().getPattern(0));
-        setSelectedTrack(getSelectedPattern().getTrack(0));
-        getSelectedTrack().setSelected(true);
+        select(getSession(0));
+        select(getSelectedSession().getPattern(0));
+        select(getSelectedPattern().getTrack(0));
 
     }
 
     public Session getSession(int index) {
         return sessions[index % sessionCount];
     }
+
+    public void select(Session session) {
+        if (selectedSession != null) {
+//            selectedSession.setSelected(false);
+        }
+        selectedSession = session;
+//        selectedSession.setSelected(true);
+    }
+
+    public void select(Pattern pattern) {
+        if (selectedPattern != null) {
+//            selectedPattern.setSelected(false);
+        }
+        selectedPattern = pattern;
+//        selectedPattern.setSelected(true);
+    }
+
+    public void select(Track track) {
+        if (selectedTrack != null) {
+            selectedTrack.setSelected(false);
+        }
+        selectedTrack = track;
+        selectedTrack.setSelected(true);
+    }
+
+    public void select(Step step) {
+        if (selectedStep != null) {
+            selectedStep.setSelected(false);
+        }
+        selectedStep = step;
+        selectedStep.setSelected(true);
+    }
+
+
+
 
 }

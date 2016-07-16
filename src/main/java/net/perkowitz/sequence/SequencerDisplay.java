@@ -26,6 +26,7 @@ public interface SequencerDisplay {
 
     public void displayStep(Step step);
     public void clearSteps();
+    public void displayPlayingStep(int stepNumber);
 
     public void displayButton(DisplayButton displayButton, ButtonState buttonState);
     public void displayButtons(Map<DisplayButton, ButtonState> buttonStateMap);
