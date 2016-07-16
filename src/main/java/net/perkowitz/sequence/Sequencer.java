@@ -69,9 +69,10 @@ public class Sequencer extends LaunchpadListenerAdapter {
             System.err.printf("%s\n", e.getStackTrace().toString());
         }
 
-        load();
+//        load();
         if (memory == null) {
             memory = new Memory();
+            memory.select(memory.getSelectedPattern().getTrack(8));
         }
 
         // initialize the state of the buttons
@@ -86,10 +87,11 @@ public class Sequencer extends LaunchpadListenerAdapter {
         buttonStateMap.put(SequencerDisplay.DisplayButton.STEP_PLAY_MODE, SequencerDisplay.ButtonState.DISABLED);
 
         display.initialize();
+        display.displayHelp();
+        Thread.sleep(1000);
         display.displayAll(memory, buttonStateMap);
-//        display.displayHelp();
-        startTimer();
 
+        startTimer();
         stop.await();
 
     }
@@ -114,8 +116,8 @@ public class Sequencer extends LaunchpadListenerAdapter {
             display.displayButton(SequencerDisplay.DisplayButton.PLAY, SequencerDisplay.ButtonState.ENABLED);
         } else {
             display.displayButton(SequencerDisplay.DisplayButton.PLAY, SequencerDisplay.ButtonState.DISABLED);
+            totalStepCount = 0;
             // TODO deal with this somehow
-            launchpadClient.setPadLight(Pad.at(playingStepNumber % 8, playingStepNumber / 8), COLOR_EMPTY, BackBufferOperation.NONE);
         }
         playingStepNumber = Track.getStepCount()-1;
     }
@@ -139,18 +141,34 @@ public class Sequencer extends LaunchpadListenerAdapter {
 
     }
 
+    private void advancePlayStep() {
+        setPlayStep(playingStepNumber+1);
+    }
+
+    private void setPlayStep(int stepNumber) {
+
+        // reset current step to normal appearance
+        // NB: assumes that the play steps are always displayed using the step buttons
+        int oldStepNumber = playingStepNumber;
+        display.displayStep(memory.getSelectedTrack().getStep(oldStepNumber));
+
+        // move the playing step and display it
+        playingStepNumber = (stepNumber + Track.getStepCount()) % Track.getStepCount();
+        display.displayPlayingStep(playingStepNumber);
+
+
+    }
+
     private void advance(boolean andReset) {
 
         totalStepCount++;
 
-        // reset display of current step
-        launchpadClient.setPadLight(Pad.at(playingStepNumber % 8, playingStepNumber / 8), COLOR_EMPTY, BackBufferOperation.NONE);
-
+        // determine the new step number and display it
+        int newStepNumber = playingStepNumber + 1;
         if (andReset) {
-            playingStepNumber = 0;
-        } else {
-            playingStepNumber = (playingStepNumber + 1) % Track.getStepCount();
+            newStepNumber = 0;
         }
+        setPlayStep(newStepNumber);
 
         // send the midi notes
         for (Track track : memory.getSelectedPattern().getTracks()) {
@@ -167,9 +185,6 @@ public class Sequencer extends LaunchpadListenerAdapter {
             track.setPlaying(false);
 
         }
-
-        // display new step
-        launchpadClient.setPadLight(Pad.at(playingStepNumber % 8, playingStepNumber / 8), COLOR_PLAYING, BackBufferOperation.NONE);
 
     }
 
@@ -231,16 +246,11 @@ public class Sequencer extends LaunchpadListenerAdapter {
 
                 int trackNumber = pad.getX() + (pad.getY() - TRACKS_MIN_ROW) * 8;
                 if (trackSelectMode) {
-                    // unselect the currently selected track
-                    memory.getSelectedTrack().setSelected(false);
-                    display.displayTrack(memory.getSelectedTrack());
-
-                    // select the new track
-                    int selectedTrackNumber = trackNumber;
-                    Track selectedTrack = memory.getSelectedPattern().getTrack(selectedTrackNumber);
-                    memory.setSelectedTrack(selectedTrack);
-                    selectedTrack.setSelected(true);
-                    display.displayTrack(selectedTrack);
+                    Track oldTrack = memory.getSelectedTrack();
+                    Track newTrack = memory.getSelectedPattern().getTrack(trackNumber);
+                    memory.select(newTrack);
+                    display.displayTrack(oldTrack);
+                    display.displayTrack(newTrack);
 
                 } else {
                     // toggle track enabled
@@ -257,12 +267,12 @@ public class Sequencer extends LaunchpadListenerAdapter {
                 if (stepMode == StepMode.MUTE) {
                     step.setOn(!step.isOn());
                     display.displayStep(step);
-                    memory.setSelectedStep(step);
+                    memory.select(step);
                     display.displayValue(step.getVelocity());
                 } else if (stepMode == StepMode.JUMP) {
                     playingStepNumber = (stepNumber + (Track.getStepCount() - 1)) % Track.getStepCount();
                 } else if (stepMode == StepMode.VELOCITY) {
-                    memory.setSelectedStep(step);
+                    memory.select(step);
                     display.displayValue(step.getVelocity());
                 } else if (stepMode == StepMode.PLAY) {
                     Track track = memory.getSelectedPattern().getTrack(stepNumber);
@@ -345,10 +355,8 @@ public class Sequencer extends LaunchpadListenerAdapter {
         } else if (button.equals(BUTTON_HELP)) {
             display.displayHelp();
         } else if (button.isRightButton()) {
-            System.out.printf("Right button %d\n", button.getCoordinate());
             if (memory.getSelectedStep() != null) {
                 int velocity = ((8-button.getCoordinate())*16) - 1;
-                System.out.printf("Velocity %d\n", velocity);
                 memory.getSelectedStep().setVelocity(velocity);
                 display.displayValue(velocity);
             }
