@@ -29,6 +29,7 @@ public class Sequencer implements SequencerInterface {
     private MidiDevice sequenceOutput;
     private Receiver sequenceReceiver;
 
+    private Map<Mode, Boolean> modeIsActiveMap = Maps.newHashMap();
     private Map<SequencerDisplay.DisplayButton, SequencerDisplay.ButtonState> buttonStateMap = Maps.newHashMap();
 
     private Memory memory;
@@ -52,6 +53,7 @@ public class Sequencer implements SequencerInterface {
         this.display = display;
 
         this.sequenceOutput = sequenceOutput;
+        this.sequenceOutput.open();
         this.sequenceReceiver = sequenceOutput.getReceiver();
 
 //        load();
@@ -60,10 +62,19 @@ public class Sequencer implements SequencerInterface {
             memory.select(memory.getSelectedPattern().getTrack(8));
         }
 
+        for (Mode mode : Mode.values()) {
+            modeIsActiveMap.put(mode, false);
+        }
+        Mode[] activeModes = new Mode[] { Mode.PATTERN_PLAY, Mode.TRACK_EDIT, Mode.STEP_MUTE };
+        for (Mode mode : activeModes) {
+            modeIsActiveMap.put(mode, true);
+        }
+
+
         display.initialize();
         display.displayHelp();
         Thread.sleep(1000);
-        display.displayAll(memory, buttonStateMap);
+        display.displayAll(memory, modeIsActiveMap);
 
         startTimer();
         stop.await();
@@ -137,8 +148,7 @@ public class Sequencer implements SequencerInterface {
         switch (mode) {
             case TRACK_MUTE:
                 trackSelectMode = false;
-                display.displayButton(SequencerDisplay.DisplayButton.TRACK_MUTE_MODE, SequencerDisplay.ButtonState.ENABLED);
-                display.displayButton(SequencerDisplay.DisplayButton.TRACK_SELECT_MODE, SequencerDisplay.ButtonState.DISABLED);
+                display.displayModeChoice(Mode.TRACK_MUTE, TRACK_MODES);
                 break;
 
             case TRACK_EDIT:
@@ -149,44 +159,31 @@ public class Sequencer implements SequencerInterface {
 //                    display.clearSteps();
                 }
                 trackSelectMode = true;
-                display.displayButton(SequencerDisplay.DisplayButton.TRACK_MUTE_MODE, SequencerDisplay.ButtonState.DISABLED);
-                display.displayButton(SequencerDisplay.DisplayButton.TRACK_SELECT_MODE, SequencerDisplay.ButtonState.ENABLED);
+                display.displayModeChoice(Mode.TRACK_EDIT, TRACK_MODES);
                 break;
 
             case STEP_MUTE:
                 stepMode = StepMode.MUTE;
-                display.displayButton(SequencerDisplay.DisplayButton.STEP_MUTE_MODE, SequencerDisplay.ButtonState.ENABLED);
-                display.displayButton(SequencerDisplay.DisplayButton.STEP_VELOCITY_MODE, SequencerDisplay.ButtonState.DISABLED);
-                display.displayButton(SequencerDisplay.DisplayButton.STEP_JUMP_MODE, SequencerDisplay.ButtonState.DISABLED);
-                display.displayButton(SequencerDisplay.DisplayButton.STEP_PLAY_MODE, SequencerDisplay.ButtonState.DISABLED);
+                display.displayModeChoice(Mode.STEP_MUTE, STEP_MODES);
                 display.displayTrack(memory.getSelectedTrack());
                 break;
 
             case STEP_VELOCITY:
                 stepMode = stepMode.VELOCITY;
-                display.displayButton(SequencerDisplay.DisplayButton.STEP_MUTE_MODE, SequencerDisplay.ButtonState.DISABLED);
-                display.displayButton(SequencerDisplay.DisplayButton.STEP_VELOCITY_MODE, SequencerDisplay.ButtonState.ENABLED);
-                display.displayButton(SequencerDisplay.DisplayButton.STEP_JUMP_MODE, SequencerDisplay.ButtonState.DISABLED);
-                display.displayButton(SequencerDisplay.DisplayButton.STEP_PLAY_MODE, SequencerDisplay.ButtonState.DISABLED);
+                display.displayModeChoice(Mode.STEP_VELOCITY, STEP_MODES);
                 display.displayTrack(memory.getSelectedTrack());
                 break;
 
             case STEP_JUMP:
                 stepMode = stepMode.JUMP;
-                display.displayButton(SequencerDisplay.DisplayButton.STEP_MUTE_MODE, SequencerDisplay.ButtonState.DISABLED);
-                display.displayButton(SequencerDisplay.DisplayButton.STEP_VELOCITY_MODE, SequencerDisplay.ButtonState.DISABLED);
-                display.displayButton(SequencerDisplay.DisplayButton.STEP_JUMP_MODE, SequencerDisplay.ButtonState.ENABLED);
-                display.displayButton(SequencerDisplay.DisplayButton.STEP_PLAY_MODE, SequencerDisplay.ButtonState.DISABLED);
+                display.displayModeChoice(Mode.STEP_JUMP, STEP_MODES);
                 memory.setSelectedStep(null);
                 display.clearSteps();
                 break;
 
             case STEP_PLAY:
                 stepMode = stepMode.PLAY;
-                display.displayButton(SequencerDisplay.DisplayButton.STEP_MUTE_MODE, SequencerDisplay.ButtonState.DISABLED);
-                display.displayButton(SequencerDisplay.DisplayButton.STEP_VELOCITY_MODE, SequencerDisplay.ButtonState.DISABLED);
-                display.displayButton(SequencerDisplay.DisplayButton.STEP_JUMP_MODE, SequencerDisplay.ButtonState.DISABLED);
-                display.displayButton(SequencerDisplay.DisplayButton.STEP_PLAY_MODE, SequencerDisplay.ButtonState.ENABLED);
+                display.displayModeChoice(Mode.STEP_PLAY, STEP_MODES);
                 memory.setSelectedStep(null);
                 display.clearSteps();
                 break;
@@ -217,25 +214,18 @@ public class Sequencer implements SequencerInterface {
 
 
     public void shutdown() {
-
 //        save();
-//        launchpadClient.reset();
-
-        try {
-            sequenceOutput.open();
-        } catch (MidiUnavailableException e) {
-            System.err.printf("%s\n", e.getStackTrace().toString());
-        }
-
+        display.initialize();
+        sequenceOutput.close();
         System.exit(0);
     }
 
     public void toggleStartStop() {
         playing = !playing;
         if (playing) {
-            display.displayButton(SequencerDisplay.DisplayButton.PLAY, SequencerDisplay.ButtonState.ENABLED);
+            display.displayMode(Mode.PLAY, true);
         } else {
-            display.displayButton(SequencerDisplay.DisplayButton.PLAY, SequencerDisplay.ButtonState.DISABLED);
+            display.displayMode(Mode.PLAY, false);
             totalStepCount = 0;
         }
         playingStepNumber = net.perkowitz.sequence.models.Track.getStepCount()-1;

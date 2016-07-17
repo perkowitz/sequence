@@ -19,7 +19,7 @@ public interface SequencerDisplay {
     public enum ButtonState { EMPTY, ENABLED, DISABLED, SELECTED, PLAYING, PLAYING_SELECTED }
 
     public void initialize();
-    public void displayAll(Memory memory, Map<DisplayButton, ButtonState> buttonStateMap);
+    public void displayAll(Memory memory, Map<SequencerInterface.Mode,Boolean> modeIsActiveMap);
     public void displayHelp();
 
     public void displayTrack(Track track);
@@ -28,8 +28,9 @@ public interface SequencerDisplay {
     public void clearSteps();
     public void displayPlayingStep(int stepNumber);
 
-    public void displayButton(DisplayButton displayButton, ButtonState buttonState);
-    public void displayButtons(Map<DisplayButton, ButtonState> buttonStateMap);
+    public void displayMode(SequencerInterface.Mode mode, boolean isActive);
+    public void displayModes(Map<SequencerInterface.Mode,Boolean> modeIsActiveMap);
+    public void displayModeChoice(SequencerInterface.Mode mode, SequencerInterface.Mode[] modeChoices);
 
     public void displayValue(int value);
 
