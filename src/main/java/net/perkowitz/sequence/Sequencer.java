@@ -1,9 +1,9 @@
 package net.perkowitz.sequence;
 
 import com.google.common.collect.Maps;
+import net.perkowitz.sequence.models.*;
+import net.perkowitz.sequence.models.Track;
 import net.thecodersbreakfast.lp4j.api.*;
-import net.thecodersbreakfast.lp4j.midi.MidiDeviceConfiguration;
-import net.thecodersbreakfast.lp4j.midi.MidiLaunchpad;
 import org.codehaus.jackson.map.ObjectMapper;
 
 import javax.sound.midi.*;
@@ -13,25 +13,23 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.CountDownLatch;
 
-import static net.perkowitz.sequence.LaunchpadUtil.*;
+import static net.perkowitz.sequence.launchpad.LaunchpadUtil.*;
 
 /**
  * Created by optic on 7/8/16.
  */
-public class Sequencer extends LaunchpadListenerAdapter {
+public class Sequencer implements SequencerInterface {
 
     public enum StepMode { MUTE, VELOCITY, JUMP, PLAY }
 
     ObjectMapper objectMapper = new ObjectMapper();
 
+    private SequencerController controller;
     private SequencerDisplay display;
-    private MidiDevice controllerInput;
-    private MidiDevice controllerOutput;
     private MidiDevice sequenceOutput;
     private Receiver sequenceReceiver;
-    private Launchpad launchpad;
-    private LaunchpadClient launchpadClient;
 
+    private Map<Mode, Boolean> modeIsActiveMap = Maps.newHashMap();
     private Map<SequencerDisplay.DisplayButton, SequencerDisplay.ButtonState> buttonStateMap = Maps.newHashMap();
 
     private Memory memory;
@@ -46,28 +44,17 @@ public class Sequencer extends LaunchpadListenerAdapter {
     private static CountDownLatch stop = new CountDownLatch(1);
 
 
+    /***** constructor *********************************************************************/
 
-    public Sequencer(SequencerDisplay display, MidiDevice controllerInput, MidiDevice controllerOutput, MidiDevice sequenceOutput) throws Exception {
+    public Sequencer(SequencerController controller, SequencerDisplay display, MidiDevice sequenceOutput) throws Exception {
 
+        this.controller = controller;
+        this.controller.setSequencer(this);
         this.display = display;
-        this.controllerInput = controllerInput;
-        this.controllerOutput = controllerOutput;
+
         this.sequenceOutput = sequenceOutput;
         this.sequenceOutput.open();
-
-
-        try {
-
-            launchpad = new MidiLaunchpad(new MidiDeviceConfiguration(controllerInput, controllerOutput));
-            launchpadClient = launchpad.getClient();
-//            launchpad.setListener(new ControlListener(this, launchpadClient));
-            launchpad.setListener(this);
-
-            sequenceReceiver = sequenceOutput.getReceiver();
-
-        } catch (MidiUnavailableException e) {
-            System.err.printf("%s\n", e.getStackTrace().toString());
-        }
+        this.sequenceReceiver = sequenceOutput.getReceiver();
 
 //        load();
         if (memory == null) {
@@ -75,51 +62,173 @@ public class Sequencer extends LaunchpadListenerAdapter {
             memory.select(memory.getSelectedPattern().getTrack(8));
         }
 
-        // initialize the state of the buttons
-        buttonStateMap.put(SequencerDisplay.DisplayButton.PLAY, SequencerDisplay.ButtonState.DISABLED);
-        buttonStateMap.put(SequencerDisplay.DisplayButton.EXIT, SequencerDisplay.ButtonState.ENABLED);
-        buttonStateMap.put(SequencerDisplay.DisplayButton.SAVE, SequencerDisplay.ButtonState.ENABLED);
-        buttonStateMap.put(SequencerDisplay.DisplayButton.TRACK_MUTE_MODE, SequencerDisplay.ButtonState.DISABLED);
-        buttonStateMap.put(SequencerDisplay.DisplayButton.TRACK_SELECT_MODE, SequencerDisplay.ButtonState.ENABLED);
-        buttonStateMap.put(SequencerDisplay.DisplayButton.STEP_MUTE_MODE, SequencerDisplay.ButtonState.ENABLED);
-        buttonStateMap.put(SequencerDisplay.DisplayButton.STEP_VELOCITY_MODE, SequencerDisplay.ButtonState.DISABLED);
-        buttonStateMap.put(SequencerDisplay.DisplayButton.STEP_JUMP_MODE, SequencerDisplay.ButtonState.DISABLED);
-        buttonStateMap.put(SequencerDisplay.DisplayButton.STEP_PLAY_MODE, SequencerDisplay.ButtonState.DISABLED);
+        for (Mode mode : Mode.values()) {
+            modeIsActiveMap.put(mode, false);
+        }
+        Mode[] activeModes = new Mode[] { Mode.PATTERN_PLAY, Mode.TRACK_EDIT, Mode.STEP_MUTE };
+        for (Mode mode : activeModes) {
+            modeIsActiveMap.put(mode, true);
+        }
+
 
         display.initialize();
         display.displayHelp();
         Thread.sleep(1000);
-        display.displayAll(memory, buttonStateMap);
+        display.displayAll(memory, modeIsActiveMap);
 
         startTimer();
         stop.await();
 
     }
 
-    public void shutdown() {
 
-//        save();
-        launchpadClient.reset();
+    /***** public interface *********************************************************************/
 
-        try {
-            sequenceOutput.open();
-        } catch (MidiUnavailableException e) {
-            System.err.printf("%s\n", e.getStackTrace().toString());
+    public void selectSession(int index) {
+
+    }
+
+    public void selectPattern(int index) {
+
+    }
+
+    public void selectTrack(int index) {
+
+        if (trackSelectMode) {
+            // unselect the currently selected track
+            memory.getSelectedTrack().setSelected(false);
+            display.displayTrack(memory.getSelectedTrack());
+
+            // select the new track
+            int selectedTrackNumber = index;
+            net.perkowitz.sequence.models.Track selectedTrack = memory.getSelectedPattern().getTrack(selectedTrackNumber);
+            memory.setSelectedTrack(selectedTrack);
+            selectedTrack.setSelected(true);
+            display.displayTrack(selectedTrack);
+
+        } else {
+            // toggle track enabled
+            net.perkowitz.sequence.models.Track track = memory.getSelectedPattern().getTrack(index);
+            track.setEnabled(!track.isEnabled());
+            display.displayTrack(track);
+
         }
 
+    }
+
+    public void selectStep(int index) {
+
+        Step step = memory.getSelectedTrack().getStep(index);
+        if (stepMode == StepMode.MUTE) {
+            step.setOn(!step.isOn());
+            display.displayStep(step);
+            memory.setSelectedStep(step);
+            display.displayValue(step.getVelocity());
+        } else if (stepMode == StepMode.JUMP) {
+            playingStepNumber = (index + (net.perkowitz.sequence.models.Track.getStepCount() - 1)) % net.perkowitz.sequence.models.Track.getStepCount();
+        } else if (stepMode == StepMode.VELOCITY) {
+            memory.setSelectedStep(step);
+            display.displayValue(step.getVelocity());
+        } else if (stepMode == StepMode.PLAY) {
+            net.perkowitz.sequence.models.Track track = memory.getSelectedPattern().getTrack(index);
+            sendMidiNote(track.getMidiChannel(), track.getNoteNumber(), 100);
+        }
+    }
+
+    public void selectValue(int index) {
+        if (memory.getSelectedStep() != null) {
+            int velocity = ((index+1)*16) - 1;
+            memory.getSelectedStep().setVelocity(velocity);
+            display.displayValue(velocity);
+        }
+    }
+
+    public void selectMode(Mode mode) {
+
+        switch (mode) {
+            case TRACK_MUTE:
+                trackSelectMode = false;
+                display.displayModeChoice(Mode.TRACK_MUTE, TRACK_MODES);
+                break;
+
+            case TRACK_EDIT:
+                if (trackSelectMode) {
+                    // if you press select mode a second time, it unselects the selected track (so no track is selected)
+                    memory.getSelectedTrack().setSelected(false);
+                    display.displayTrack(memory.getSelectedTrack());
+//                    display.clearSteps();
+                }
+                trackSelectMode = true;
+                display.displayModeChoice(Mode.TRACK_EDIT, TRACK_MODES);
+                break;
+
+            case STEP_MUTE:
+                stepMode = StepMode.MUTE;
+                display.displayModeChoice(Mode.STEP_MUTE, STEP_MODES);
+                display.displayTrack(memory.getSelectedTrack());
+                break;
+
+            case STEP_VELOCITY:
+                stepMode = stepMode.VELOCITY;
+                display.displayModeChoice(Mode.STEP_VELOCITY, STEP_MODES);
+                display.displayTrack(memory.getSelectedTrack());
+                break;
+
+            case STEP_JUMP:
+                stepMode = stepMode.JUMP;
+                display.displayModeChoice(Mode.STEP_JUMP, STEP_MODES);
+                memory.setSelectedStep(null);
+                display.clearSteps();
+                break;
+
+            case STEP_PLAY:
+                stepMode = stepMode.PLAY;
+                display.displayModeChoice(Mode.STEP_PLAY, STEP_MODES);
+                memory.setSelectedStep(null);
+                display.clearSteps();
+                break;
+
+            case PLAY:
+                toggleStartStop();
+                break;
+
+            case EXIT:
+                shutdown();
+                break;
+
+            case SAVE:
+                save();
+                break;
+
+            case HELP:
+                display.displayHelp();
+                break;
+
+            //         LOAD, COPY, CLEAR, PATTERN_PLAY, PATTERN_EDIT,
+
+        }
+    }
+
+
+    /***** private implementation *********************************************************************/
+
+
+    public void shutdown() {
+//        save();
+        display.initialize();
+        sequenceOutput.close();
         System.exit(0);
     }
 
     public void toggleStartStop() {
         playing = !playing;
         if (playing) {
-            display.displayButton(SequencerDisplay.DisplayButton.PLAY, SequencerDisplay.ButtonState.ENABLED);
+            display.displayMode(Mode.PLAY, true);
         } else {
-            display.displayButton(SequencerDisplay.DisplayButton.PLAY, SequencerDisplay.ButtonState.DISABLED);
+            display.displayMode(Mode.PLAY, false);
             totalStepCount = 0;
-            // TODO deal with this somehow
         }
-        playingStepNumber = Track.getStepCount()-1;
+        playingStepNumber = net.perkowitz.sequence.models.Track.getStepCount()-1;
     }
 
     public void startTimer() {
@@ -130,7 +239,7 @@ public class Sequencer extends LaunchpadListenerAdapter {
             public void run() {
                 if (playing) {
                     boolean andReset = false;
-                    if (totalStepCount % Track.getStepCount() == 0) {
+                    if (totalStepCount % net.perkowitz.sequence.models.Track.getStepCount() == 0) {
                         andReset = true;
                     }
                     advance(andReset);
@@ -171,7 +280,7 @@ public class Sequencer extends LaunchpadListenerAdapter {
         setPlayStep(newStepNumber);
 
         // send the midi notes
-        for (Track track : memory.getSelectedPattern().getTracks()) {
+        for (net.perkowitz.sequence.models.Track track : memory.getSelectedPattern().getTracks()) {
             Step step = track.getStep(playingStepNumber);
             if (step.isOn()) {
                 track.setPlaying(true);
@@ -228,148 +337,6 @@ public class Sequencer extends LaunchpadListenerAdapter {
             System.err.println(e);
         }
 
-    }
-
-
-
-
-    /************************************************************************
-     * Launchpad listener implementation
-     *
-     */
-    @Override
-    public void onPadPressed(Pad pad, long timestamp) {
-
-        try {
-            if (pad.getY() >= TRACKS_MIN_ROW && pad.getY() <= TRACKS_MAX_ROW) {
-                // pressing a track pad
-
-                int trackNumber = pad.getX() + (pad.getY() - TRACKS_MIN_ROW) * 8;
-                if (trackSelectMode) {
-                    Track oldTrack = memory.getSelectedTrack();
-                    Track newTrack = memory.getSelectedPattern().getTrack(trackNumber);
-                    memory.select(newTrack);
-                    display.displayTrack(oldTrack);
-                    display.displayTrack(newTrack);
-
-                } else {
-                    // toggle track enabled
-                    Track track = memory.getSelectedPattern().getTrack(trackNumber);
-                    track.setEnabled(!track.isEnabled());
-                    display.displayTrack(track);
-
-                }
-
-            } else if (pad.getY() >= STEPS_MIN_ROW && pad.getY() <= STEPS_MAX_ROW) {
-                // pressing a step pad
-                int stepNumber = pad.getX() + (pad.getY() - STEPS_MIN_ROW) * 8;
-                Step step = memory.getSelectedTrack().getStep(stepNumber);
-                if (stepMode == StepMode.MUTE) {
-                    step.setOn(!step.isOn());
-                    display.displayStep(step);
-                    memory.select(step);
-                    display.displayValue(step.getVelocity());
-                } else if (stepMode == StepMode.JUMP) {
-                    playingStepNumber = (stepNumber + (Track.getStepCount() - 1)) % Track.getStepCount();
-                } else if (stepMode == StepMode.VELOCITY) {
-                    memory.select(step);
-                    display.displayValue(step.getVelocity());
-                } else if (stepMode == StepMode.PLAY) {
-                    Track track = memory.getSelectedPattern().getTrack(stepNumber);
-                    sendMidiNote(track.getMidiChannel(), track.getNoteNumber(), 100);
-                }
-
-            } else if (pad.equals(TRACK_MUTE_MODE)) {
-                trackSelectMode = false;
-                display.displayButton(SequencerDisplay.DisplayButton.TRACK_MUTE_MODE, SequencerDisplay.ButtonState.ENABLED);
-                display.displayButton(SequencerDisplay.DisplayButton.TRACK_SELECT_MODE, SequencerDisplay.ButtonState.DISABLED);
-
-            } else if (pad.equals(TRACK_SELECT_MODE)) {
-                if (trackSelectMode) {
-                    // if you press select mode a second time, it unselects the selected track (so no track is selected)
-                    memory.getSelectedTrack().setSelected(false);
-                    display.displayTrack(memory.getSelectedTrack());
-//                    display.clearSteps();
-                }
-                trackSelectMode = true;
-                display.displayButton(SequencerDisplay.DisplayButton.TRACK_MUTE_MODE, SequencerDisplay.ButtonState.DISABLED);
-                display.displayButton(SequencerDisplay.DisplayButton.TRACK_SELECT_MODE, SequencerDisplay.ButtonState.ENABLED);
-
-            } else if (pad.equals(STEP_MUTE_MODE)) {
-                stepMode = StepMode.MUTE;
-                display.displayButton(SequencerDisplay.DisplayButton.STEP_MUTE_MODE, SequencerDisplay.ButtonState.ENABLED);
-                display.displayButton(SequencerDisplay.DisplayButton.STEP_VELOCITY_MODE, SequencerDisplay.ButtonState.DISABLED);
-                display.displayButton(SequencerDisplay.DisplayButton.STEP_JUMP_MODE, SequencerDisplay.ButtonState.DISABLED);
-                display.displayButton(SequencerDisplay.DisplayButton.STEP_PLAY_MODE, SequencerDisplay.ButtonState.DISABLED);
-                display.displayTrack(memory.getSelectedTrack());
-
-            } else if (pad.equals(STEP_VELOCITY_MODE)) {
-                stepMode = stepMode.VELOCITY;
-                display.displayButton(SequencerDisplay.DisplayButton.STEP_MUTE_MODE, SequencerDisplay.ButtonState.DISABLED);
-                display.displayButton(SequencerDisplay.DisplayButton.STEP_VELOCITY_MODE, SequencerDisplay.ButtonState.ENABLED);
-                display.displayButton(SequencerDisplay.DisplayButton.STEP_JUMP_MODE, SequencerDisplay.ButtonState.DISABLED);
-                display.displayButton(SequencerDisplay.DisplayButton.STEP_PLAY_MODE, SequencerDisplay.ButtonState.DISABLED);
-                display.displayTrack(memory.getSelectedTrack());
-
-            } else if (pad.equals(STEP_JUMP_MODE)) {
-                stepMode = stepMode.JUMP;
-                display.displayButton(SequencerDisplay.DisplayButton.STEP_MUTE_MODE, SequencerDisplay.ButtonState.DISABLED);
-                display.displayButton(SequencerDisplay.DisplayButton.STEP_VELOCITY_MODE, SequencerDisplay.ButtonState.DISABLED);
-                display.displayButton(SequencerDisplay.DisplayButton.STEP_JUMP_MODE, SequencerDisplay.ButtonState.ENABLED);
-                display.displayButton(SequencerDisplay.DisplayButton.STEP_PLAY_MODE, SequencerDisplay.ButtonState.DISABLED);
-                memory.setSelectedStep(null);
-                display.clearSteps();
-
-            } else if (pad.equals(STEP_PLAY_MODE)) {
-                stepMode = stepMode.PLAY;
-                display.displayButton(SequencerDisplay.DisplayButton.STEP_MUTE_MODE, SequencerDisplay.ButtonState.DISABLED);
-                display.displayButton(SequencerDisplay.DisplayButton.STEP_VELOCITY_MODE, SequencerDisplay.ButtonState.DISABLED);
-                display.displayButton(SequencerDisplay.DisplayButton.STEP_JUMP_MODE, SequencerDisplay.ButtonState.DISABLED);
-                display.displayButton(SequencerDisplay.DisplayButton.STEP_PLAY_MODE, SequencerDisplay.ButtonState.ENABLED);
-                memory.setSelectedStep(null);
-                display.clearSteps();
-
-            }
-
-
-
-        } catch (Exception e) {
-            System.err.println(e.toString());
-        }
-
-    }
-
-    @Override
-    public void onPadReleased(Pad pad, long timestamp) {
-    }
-
-    @Override
-    public void onButtonPressed(Button button, long timestamp) {
-
-        if (button.equals(BUTTON_PLAY)) {
-            toggleStartStop();
-        } else if (button.equals(BUTTON_EXIT)) {
-            shutdown();
-        } else if (button.equals(BUTTON_SAVE)) {
-            save();
-        } else if (button.equals(BUTTON_HELP)) {
-            display.displayHelp();
-        } else if (button.isRightButton()) {
-            if (memory.getSelectedStep() != null) {
-                int velocity = ((8-button.getCoordinate())*16) - 1;
-                memory.getSelectedStep().setVelocity(velocity);
-                display.displayValue(velocity);
-            }
-        }
-    }
-
-
-    @Override
-    public void onButtonReleased(Button button, long timestamp) {
-
-        if (button.equals(BUTTON_HELP)) {
-            display.displayAll(memory, null);
-        }
     }
 
 

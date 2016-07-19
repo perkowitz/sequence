@@ -1,0 +1,91 @@
+package net.perkowitz.sequence.launchpad;
+
+import lombok.Setter;
+import net.perkowitz.sequence.Sequencer;
+import net.perkowitz.sequence.SequencerController;
+import net.perkowitz.sequence.SequencerInterface;
+import net.perkowitz.sequence.models.Step;
+import net.perkowitz.sequence.models.Track;
+import net.thecodersbreakfast.lp4j.api.Button;
+import net.thecodersbreakfast.lp4j.api.LaunchpadListenerAdapter;
+import net.thecodersbreakfast.lp4j.api.Pad;
+
+import static net.perkowitz.sequence.launchpad.LaunchpadUtil.*;
+
+/**
+ * Created by mperkowi on 7/15/16.
+ */
+public class LaunchpadController extends LaunchpadListenerAdapter implements SequencerController {
+
+    private SequencerInterface sequencer = null;
+
+    public LaunchpadController() {
+    }
+
+    public void setSequencer(SequencerInterface sequencer) {
+        this.sequencer = sequencer;
+    }
+
+    @Override
+    public void onPadPressed(Pad pad, long timestamp) {
+
+        try {
+            if (pad.getY() >= TRACKS_MIN_ROW && pad.getY() <= TRACKS_MAX_ROW) {
+                // pressing a track pad
+                int index = pad.getX() + (pad.getY() - TRACKS_MIN_ROW) * 8;
+                sequencer.selectTrack(index);
+
+            } else if (pad.getY() >= STEPS_MIN_ROW && pad.getY() <= STEPS_MAX_ROW) {
+                // pressing a step pad
+                int index = pad.getX() + (pad.getY() - STEPS_MIN_ROW) * 8;
+                sequencer.selectStep(index);
+
+            } else if (pad.equals(TRACK_MUTE_MODE)) {
+                sequencer.selectMode(SequencerInterface.Mode.TRACK_MUTE);
+
+            } else if (pad.equals(TRACK_SELECT_MODE)) {
+                sequencer.selectMode(SequencerInterface.Mode.TRACK_EDIT);
+
+            } else if (pad.equals(STEP_MUTE_MODE)) {
+                sequencer.selectMode(SequencerInterface.Mode.STEP_MUTE);
+
+            } else if (pad.equals(STEP_VELOCITY_MODE)) {
+                sequencer.selectMode(SequencerInterface.Mode.STEP_VELOCITY);
+
+            } else if (pad.equals(STEP_JUMP_MODE)) {
+                sequencer.selectMode(SequencerInterface.Mode.STEP_JUMP);
+
+            } else if (pad.equals(STEP_PLAY_MODE)) {
+                sequencer.selectMode(SequencerInterface.Mode.STEP_PLAY);
+
+            }
+
+        } catch (Exception e) {
+            System.err.println(e.toString());
+        }
+
+    }
+
+    @Override
+    public void onButtonPressed(Button button, long timestamp) {
+
+        if (button.equals(BUTTON_PLAY)) {
+            sequencer.selectMode(SequencerInterface.Mode.PLAY);
+
+        } else if (button.equals(BUTTON_EXIT)) {
+            sequencer.selectMode(SequencerInterface.Mode.EXIT);
+
+        } else if (button.equals(BUTTON_SAVE)) {
+            sequencer.selectMode(SequencerInterface.Mode.SAVE);
+
+        } else if (button.equals(BUTTON_HELP)) {
+            sequencer.selectMode(SequencerInterface.Mode.HELP);
+
+        } else if (button.isRightButton()) {
+            // pressing one of the value buttons
+            int index = 7 - button.getCoordinate();
+            sequencer.selectValue(index);
+        }
+    }
+
+}

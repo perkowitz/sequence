@@ -34,11 +34,19 @@ public class MidiUtil {
 
                 if (midiDeviceInfos[i].getName().toLowerCase().contains(deviceName.toLowerCase()) && receive == canReceive && transmit == canTransmit) {
                     targetDevice = device;
+                } else if (midiDeviceInfos[i].getDescription().toLowerCase().contains(deviceName.toLowerCase()) && receive == canReceive && transmit == canTransmit) {
+                    targetDevice = device;
                 }
 
             }
         } catch (MidiUnavailableException e) {
             System.out.printf("MIDI not available: %s\n", e);
+        }
+
+        if (targetDevice == null) {
+            for (int i = 0; i < midiDeviceInfos.length; i++) {
+                System.out.printf("Found midi device: %s, %s\n", midiDeviceInfos[i].getName(), midiDeviceInfos[i].getDescription());
+            }
         }
 
         return targetDevice;
