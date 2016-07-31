@@ -9,10 +9,12 @@ import net.thecodersbreakfast.lp4j.api.Pad;
  */
 public class LaunchpadUtil {
 
-    public static int SESSIONS_MIN_ROW = 0;
-    public static int SESSIONS_MAX_ROW = 0;
-    public static int PATTERNS_MIN_ROW = 1;
-    public static int PATTERNS_MAX_ROW = 2;
+//    public static int SESSIONS_MIN_ROW = 0;
+//    public static int SESSIONS_MAX_ROW = 0;
+    public static int PATTERNS_MIN_ROW = 0;
+    public static int PATTERNS_MAX_ROW = 1;
+    public static int FILLS_MIN_ROW = 2;
+    public static int FILLS_MAX_ROW = 2;
     public static int TRACKS_MIN_ROW = 4;
     public static int TRACKS_MAX_ROW = 5;
     public static int STEPS_MIN_ROW = 6;
@@ -30,7 +32,8 @@ public class LaunchpadUtil {
     public static Button BUTTON_PLAY = Button.RIGHT;
     public static Button BUTTON_EXIT = Button.MIXER;
     public static Button BUTTON_SAVE = Button.SESSION;
-    public static Button BUTTON_HELP = Button.UP;
+    public static Button BUTTON_HELP = null;
+    public static Button BUTTON_PATTERN_EDIT = Button.UP;
 
     public static int MODE_ROW = 3;
     public static Pad TRACK_MUTE_MODE = Pad.at(0, MODE_ROW);

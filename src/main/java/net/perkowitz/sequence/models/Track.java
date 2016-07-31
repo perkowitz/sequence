@@ -51,4 +51,10 @@ public class Track {
         steps[position].setVelocity(velocity);
     }
 
+    @Override
+    public String toString() {
+        return "Track:" + getIndex();
+    }
+
+
 }

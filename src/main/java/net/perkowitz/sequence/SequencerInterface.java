@@ -20,6 +20,7 @@ public interface SequencerInterface {
 
     public void selectSession(int index);
     public void selectPattern(int index);
+    public void selectPatterns(int minIndex, int maxIndex);
     public void selectTrack(int index);
     public void selectStep(int index);
     public void selectValue(int index);
