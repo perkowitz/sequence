@@ -119,31 +119,36 @@ public class LaunchpadDisplay implements SequencerDisplay {
 
         int x = getX(pattern.getIndex());
         int y = LaunchpadUtil.PATTERNS_MIN_ROW + getY(pattern.getIndex());
-//        System.out.printf("displayPattern: %s, x=%d, y=%d, sel=%s, play=%s, next=%s\n", pattern, x, y, pattern.isSelected(), pattern.isPlaying(), pattern.isNext());
 
         Color color = COLOR_PLAYING_DIM;
         if (pattern.isSelected() && pattern.isPlaying()) {
-            color = COLOR_PLAYING;
-        } else if (pattern.isSelected()) {
             color = COLOR_SELECTED;
+        } else if (pattern.isSelected()) {
+            color = COLOR_SELECTED_DIM;
         } else if (pattern.isPlaying())  {
             color = COLOR_PLAYING;
-        } else if (pattern.isNext())  {
-            color = Color.of(2, 0);
+        } else if (pattern.isChained())  {
+            color = COLOR_DISABLED;
         }
+        System.out.printf("displayPattern: %s, x=%d, y=%d, sel=%s, play=%s, chained=%s, color=%d,%d\n",
+                pattern, x, y, pattern.isSelected(), pattern.isPlaying(), pattern.isChained(),
+                color.getRed(), color.getGreen());
 
         launchpadClient.setPadLight(Pad.at(x, y), color, BackBufferOperation.NONE);
 
         if (pattern.isSelected()) {
             for (Track track : pattern.getTracks()) {
-//                displayTrack(track);
+                displayTrack(track);
             }
         }
 
     }
 
-
     public void displayTrack(Track track) {
+        displayTrack(track, true);
+    }
+
+    public void displayTrack(Track track, boolean displaySteps) {
 
         int x = getX(track.getIndex());
         int y = LaunchpadUtil.TRACKS_MIN_ROW + getY(track.getIndex());
@@ -160,8 +165,10 @@ public class LaunchpadDisplay implements SequencerDisplay {
             } else {
                 launchpadClient.setPadLight(Pad.at(x, y), LaunchpadUtil.COLOR_SELECTED_DIM, BackBufferOperation.NONE);
             }
-            for (int i = 0; i < Track.getStepCount(); i++) {
-                displayStep(track.getStep(i));
+            if (displaySteps) {
+                for (int i = 0; i < Track.getStepCount(); i++) {
+                    displayStep(track.getStep(i));
+                }
             }
         } else {
             if (track.isEnabled()) {

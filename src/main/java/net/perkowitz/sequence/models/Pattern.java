@@ -15,7 +15,7 @@ public class Pattern {
     @Getter private int index;
     @Getter @Setter private boolean selected = false;
     @Getter @Setter private boolean playing = false;
-    @Getter @Setter private boolean next = false;
+    @Getter @Setter private boolean chained = false;
 
     @Getter @Setter private static int trackCount = 16;
     @Getter private Track[] tracks;

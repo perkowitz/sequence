@@ -25,6 +25,7 @@ public interface SequencerDisplay {
 
     public void displayPattern(Pattern pattern);
 
+    public void displayTrack(Track track, boolean displaySteps);
     public void displayTrack(Track track);
 
     public void displayStep(Step step);

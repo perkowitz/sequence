@@ -1,10 +1,10 @@
 package net.perkowitz.sequence.models;
 
-import com.google.common.collect.Sets;
+import com.google.common.collect.Lists;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.Set;
+import java.util.List;
 
 /**
  * Created by optic on 7/9/16.
@@ -109,35 +109,44 @@ public class Memory {
     public void setPatternRange(int min, int max, int index) {
 
         for (int i = patternRangeMin; i <= patternRangeMax; i++ ) {
-            selectedSession().getPattern(i).setNext(false);
+            selectedSession().getPattern(i).setChained(false);
         }
 
         patternRangeMin = min;
         patternRangeMax = max;
         patternRangeIndex = index;
         for (int i = patternRangeMin; i <= patternRangeMax; i++ ) {
-            selectedSession().getPattern(i).setNext(true);
+            selectedSession().getPattern(i).setChained(true);
         }
     }
 
-    public Set<Pattern> getPatternRange() {
-        Set<Pattern> patterns = Sets.newHashSet();
+    public List<Pattern> getPatternRange() {
+        List<Pattern> patterns = Lists.newArrayList();
         for (int i = patternRangeMin; i <= patternRangeMax; i++ ) {
             patterns.add(selectedSession().getPattern(i));
         }
         return patterns;
     }
 
+    public Pattern getNextPattern() {
+        return selectedSession().getPattern(patternRangeIndex);
+    }
+
 
     public Pattern advancePattern() {
+
+        Pattern currentPattern = playingPattern();
+        currentPattern.setPlaying(false);
 
         playingPatternIndex = patternRangeIndex;
         patternRangeIndex++;
         if (patternRangeIndex > patternRangeMax) {
             patternRangeIndex = patternRangeMin;
         }
+        Pattern pattern = playingPattern();
+        pattern.setPlaying(true);
 
-        return playingPattern();
+        return pattern;
     }
 
 
