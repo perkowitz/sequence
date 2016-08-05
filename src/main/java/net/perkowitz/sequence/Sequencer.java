@@ -2,11 +2,16 @@ package net.perkowitz.sequence;
 
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import net.perkowitz.sequence.models.*;
+import net.perkowitz.sequence.models.Memory;
+import net.perkowitz.sequence.models.Pattern;
+import net.perkowitz.sequence.models.Step;
 import net.perkowitz.sequence.models.Track;
 import org.codehaus.jackson.map.ObjectMapper;
 
-import javax.sound.midi.*;
+import javax.sound.midi.InvalidMidiDataException;
+import javax.sound.midi.MidiDevice;
+import javax.sound.midi.Receiver;
+import javax.sound.midi.ShortMessage;
 import java.io.File;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;

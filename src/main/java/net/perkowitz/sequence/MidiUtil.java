@@ -3,7 +3,6 @@ package net.perkowitz.sequence;
 import javax.sound.midi.MidiDevice;
 import javax.sound.midi.MidiSystem;
 import javax.sound.midi.MidiUnavailableException;
-import javax.sound.midi.Receiver;
 
 /**
  * Created by optic on 7/8/16.
