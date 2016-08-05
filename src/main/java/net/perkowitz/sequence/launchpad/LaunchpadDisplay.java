@@ -25,9 +25,9 @@ public class LaunchpadDisplay implements SequencerDisplay {
         modeButtonMap.put(SequencerInterface.Mode.SAVE, Button.SESSION);
         modeButtonMap.put(SequencerInterface.Mode.LOAD, Button.USER_1);
         modeButtonMap.put(SequencerInterface.Mode.HELP, Button.USER_2);
-        modeButtonMap.put(SequencerInterface.Mode.COPY, Button.UP);
-        modeButtonMap.put(SequencerInterface.Mode.CLEAR, Button.DOWN);
-        modeButtonMap.put(SequencerInterface.Mode.PATTERN_EDIT, Button.LEFT);
+//        modeButtonMap.put(SequencerInterface.Mode.COPY, Button.UP);
+//        modeButtonMap.put(SequencerInterface.Mode.CLEAR, Button.DOWN);
+        modeButtonMap.put(SequencerInterface.Mode.PATTERN_EDIT, Button.UP);
 
         int modeButtonRow = 3;
         modePadMap.put(SequencerInterface.Mode.TRACK_MUTE, Pad.at(0, modeButtonRow));

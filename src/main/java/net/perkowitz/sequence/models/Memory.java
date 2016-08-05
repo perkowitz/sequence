@@ -14,15 +14,15 @@ public class Memory {
     @Getter @Setter private static int sessionCount = 8;
     @Getter private Session[] sessions;
 
-    private int selectedSessionIndex;
-    private int selectedPatternIndex;
-    private int selectedTrackIndex;
-    private int selectedStepIndex;
+    @Getter private int selectedSessionIndex;
+    @Getter private int selectedPatternIndex;
+    @Getter private int selectedTrackIndex;
+    @Getter private int selectedStepIndex;
 
-    private int playingPatternIndex;// the currently playing pattern (which might not be in the chain, if a new one has been selected)
-    private int patternChainMin;    // the index of the first of the playing pattern chain
-    private int patternChainMax;    // the index of the last of the pattern chain
-    private int patternChainIndex;  // the index of the NEXT pattern to play
+    @Getter private int playingPatternIndex;// the currently playing pattern (which might not be in the chain, if a new one has been selected)
+    @Getter private int patternChainMin;    // the index of the first of the playing pattern chain
+    @Getter private int patternChainMax;    // the index of the last of the pattern chain
+    @Getter private int patternChainIndex;  // the index of the NEXT pattern to play
     @Getter @Setter private boolean specialSelected = false;
 
     public Memory() {
@@ -89,10 +89,6 @@ public class Memory {
     }
 
     public void select(Track track) {
-//        Track selectedTrack = selectedTrack();
-//        if (selectedTrack != null) {
-//            selectedTrack.setSelected(false);
-//        }
         selectedTrackIndex = track.getIndex();
         for (Track t : selectedPattern().getTracks()) {
             t.setSelected(false);
@@ -105,12 +101,8 @@ public class Memory {
         if (selectedStep != null) {
             selectedStep.setSelected(false);
         }
-        selectedStep = step;
-        selectedStep.setSelected(true);
-    }
-
-    public void setPattern(int index) {
-        setPatternChain(index, index, index);
+        selectedStepIndex = step.getIndex();
+        step.setSelected(true);
     }
 
     public List<Pattern> setPatternChain(int min, int max, int index) {
@@ -130,6 +122,10 @@ public class Memory {
         }
 
         return newChain;
+    }
+
+    public void resetPatternChainIndex() {
+        patternChainIndex = patternChainMin;
     }
 
     public List<Pattern> getPatternChain() {

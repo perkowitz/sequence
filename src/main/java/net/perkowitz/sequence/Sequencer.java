@@ -95,27 +95,36 @@ public class Sequencer implements SequencerInterface {
 
         System.out.printf("selectPatterns: %d - %d\n", minIndex, maxIndex);
 
-        // retrieve current selected pattern and chain and save them to re-display
-        Set<Pattern> patternsToDisplay = Sets.newHashSet();
-        patternsToDisplay.add(memory.selectedPattern());
-        patternsToDisplay.addAll(memory.getPatternChain());
-
-
-        // select the new pattern and set it as the chain (chained)
-        List<Pattern> newChain = memory.setPatternChain(minIndex, maxIndex, minIndex);
-        if (!playing) {
-            // if not currently playing, you can advance directly to the new pattern
-//            memory.advancePattern();
-        }
-
-        // when a new chain is set, we default to normal selection (the first of the chain)
-        memory.setSpecialSelected(false);
-        memory.select(newChain.get(0));
-        patternsToDisplay.addAll(newChain);
-
-        // update display of all affected patterns
-        for (Pattern pattern : patternsToDisplay) {
+        if (patternEditMode) {
+            Pattern selected = memory.selectedPattern();
+            Pattern pattern = memory.selectedSession().getPattern(minIndex);
+            memory.setSpecialSelected(true);
+            memory.select(pattern);
+            display.displayPattern(selected);
             display.displayPattern(pattern);
+        } else {
+            // retrieve current selected pattern and chain and save them to re-display
+            Set<Pattern> patternsToDisplay = Sets.newHashSet();
+            patternsToDisplay.add(memory.selectedPattern());
+            patternsToDisplay.addAll(memory.getPatternChain());
+
+
+            // select the new pattern and set it as the chain (chained)
+            List<Pattern> newChain = memory.setPatternChain(minIndex, maxIndex, minIndex);
+            if (!playing) {
+                // if not currently playing, you can advance directly to the new pattern
+                //memory.advancePattern();
+            }
+
+            // when a new chain is set, we default to normal selection (the first of the chain)
+            memory.setSpecialSelected(false);
+            memory.select(newChain.get(0));
+            patternsToDisplay.addAll(newChain);
+
+            // update display of all affected patterns
+            for (Pattern pattern : patternsToDisplay) {
+                display.displayPattern(pattern);
+            }
         }
 
     }
@@ -143,7 +152,7 @@ public class Sequencer implements SequencerInterface {
 
     public void selectStep(int index) {
 
-        System.out.printf("selectStep: %d\n", index);
+        System.out.printf("selectStep: %d, %s\n", index, stepMode);
         Step step = memory.selectedTrack().getStep(index);
         if (stepMode == StepMode.MUTE) {
             // in mute mode, both mute/unmute and select that step
@@ -165,9 +174,11 @@ public class Sequencer implements SequencerInterface {
 
     public void selectValue(int index) {
         System.out.printf("selectValue: %d\n", index);
-        if (memory.selectedStep() != null) {
+        Step step = memory.selectedStep();
+        if (step != null) {
             int velocity = ((index+1)*16) - 1;
-            memory.selectedStep().setVelocity(velocity);
+            System.out.printf("- for step %s, v=%d, set v=%d\n", step, step.getVelocity(), velocity);
+            step.setVelocity(velocity);
             display.displayValue(velocity);
         }
     }
@@ -270,9 +281,10 @@ public class Sequencer implements SequencerInterface {
             totalStepCount = 0;
         }
         nextStepIndex = 0;
+        memory.resetPatternChainIndex();
         List<Pattern> patternChain = memory.getPatternChain();
         if (patternChain.size() > 0) {
-            nextPattern(patternChain.get(0));
+//            nextPattern(patternChain.get(0));
         }
 
     }
