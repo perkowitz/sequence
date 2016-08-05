@@ -90,7 +90,7 @@ public class LaunchpadController extends LaunchpadListenerAdapter implements Seq
                     int index = pad.getX() + (pad.getY() - PATTERNS_MIN_ROW) * 8;
                     patternsPressed.add(index); // just to make sure
                     if (patternsPressed.size() == 1) {
-                        sequencer.selectPattern(index);
+                        sequencer.selectPatterns(index, index);
                     } else {
                         int min = 100;
                         int max = -1;

@@ -14,15 +14,16 @@ public class Memory {
     @Getter @Setter private static int sessionCount = 8;
     @Getter private Session[] sessions;
 
-    @Setter private int selectedSessionIndex;
-    @Setter private int selectedPatternIndex;
-    @Setter private int selectedTrackIndex;
-    @Setter private int selectedStepIndex;
+    private int selectedSessionIndex;
+    private int selectedPatternIndex;
+    private int selectedTrackIndex;
+    private int selectedStepIndex;
 
-    @Getter @Setter private int playingPatternIndex;// the currently playing pattern (which might not be in the range, if a new one has been selected)
-    @Getter @Setter private int patternRangeMin;    // the index of the first of the playing pattern range
-    @Getter @Setter private int patternRangeMax;    // the index of the last of the pattern range
-    @Getter @Setter private int patternRangeIndex;  // the index of the NEXT pattern to play
+    private int playingPatternIndex;// the currently playing pattern (which might not be in the chain, if a new one has been selected)
+    private int patternChainMin;    // the index of the first of the playing pattern chain
+    private int patternChainMax;    // the index of the last of the pattern chain
+    private int patternChainIndex;  // the index of the NEXT pattern to play
+    @Getter @Setter private boolean specialSelected = false;
 
     public Memory() {
 
@@ -34,7 +35,7 @@ public class Memory {
         select(getSession(0));
         select(selectedSession().getPattern(0));
         select(selectedPattern().getTrack(8));
-        setPatternRange(0, 0, 0);
+        setPatternChain(0, 0, 0);
         playingPatternIndex = 0;
 
     }
@@ -59,6 +60,11 @@ public class Memory {
         return selectedSession().getPattern(playingPatternIndex);
     }
 
+    public Pattern nextPattern() {
+        return selectedSession().getPattern(patternChainIndex);
+    }
+
+
     public Session getSession(int index) {
         return sessions[index % sessionCount];
     }
@@ -79,6 +85,7 @@ public class Memory {
         }
         pattern.setSelected(true);
         selectedPatternIndex = pattern.getIndex();
+        pattern.selectTrack(selectedTrackIndex);
     }
 
     public void select(Track track) {
@@ -86,7 +93,7 @@ public class Memory {
 //        if (selectedTrack != null) {
 //            selectedTrack.setSelected(false);
 //        }
-        setSelectedTrackIndex(track.getIndex());
+        selectedTrackIndex = track.getIndex();
         for (Track t : selectedPattern().getTracks()) {
             t.setSelected(false);
         }
@@ -103,50 +110,60 @@ public class Memory {
     }
 
     public void setPattern(int index) {
-        setPatternRange(index, index, index);
+        setPatternChain(index, index, index);
     }
 
-    public void setPatternRange(int min, int max, int index) {
+    public List<Pattern> setPatternChain(int min, int max, int index) {
 
-        for (int i = patternRangeMin; i <= patternRangeMax; i++ ) {
+        for (int i = patternChainMin; i <= patternChainMax; i++ ) {
             selectedSession().getPattern(i).setChained(false);
         }
 
-        patternRangeMin = min;
-        patternRangeMax = max;
-        patternRangeIndex = index;
-        for (int i = patternRangeMin; i <= patternRangeMax; i++ ) {
-            selectedSession().getPattern(i).setChained(true);
+        List<Pattern> newChain = Lists.newArrayList();
+        patternChainMin = min;
+        patternChainMax = max;
+        patternChainIndex = index;
+        for (int i = patternChainMin; i <= patternChainMax; i++ ) {
+            Pattern pattern = selectedSession().getPattern(i);
+            pattern.setChained(true);
+            newChain.add(pattern);
         }
+
+        return newChain;
     }
 
-    public List<Pattern> getPatternRange() {
+    public List<Pattern> getPatternChain() {
         List<Pattern> patterns = Lists.newArrayList();
-        for (int i = patternRangeMin; i <= patternRangeMax; i++ ) {
+        for (int i = patternChainMin; i <= patternChainMax; i++ ) {
             patterns.add(selectedSession().getPattern(i));
         }
         return patterns;
     }
 
-    public Pattern getNextPattern() {
-        return selectedSession().getPattern(patternRangeIndex);
-    }
-
 
     public Pattern advancePattern() {
 
-        Pattern currentPattern = playingPattern();
-        currentPattern.setPlaying(false);
+        Pattern playing = playingPattern();
+        Pattern next = nextPattern();
 
-        playingPatternIndex = patternRangeIndex;
-        patternRangeIndex++;
-        if (patternRangeIndex > patternRangeMax) {
-            patternRangeIndex = patternRangeMin;
+        if (playing != next) {
+            playing.setPlaying(false);
+            playingPatternIndex = patternChainIndex;
+            patternChainIndex++;
+            if (patternChainIndex > patternChainMax) {
+                patternChainIndex = patternChainMin;
+            }
+            next = playingPattern();
+            next.setPlaying(true);
+
+            if (!specialSelected) {
+                select(next);
+                next.selectTrack(selectedTrackIndex);
+            }
+
         }
-        Pattern pattern = playingPattern();
-        pattern.setPlaying(true);
 
-        return pattern;
+        return next;
     }
 
 

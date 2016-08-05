@@ -40,6 +40,13 @@ public class Pattern {
         return tracks[index % trackCount];
     }
 
+    public void selectTrack(int index) {
+        for (int i = 0; i < trackCount; i++) {
+            tracks[i].setSelected(false);
+        }
+        tracks[index].setSelected(true);
+    }
+
     @Override
     public String toString() {
         return "Pattern:" + getIndex();

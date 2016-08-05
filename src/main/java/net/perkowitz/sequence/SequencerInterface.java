@@ -19,7 +19,6 @@ public interface SequencerInterface {
     public static final Mode[] STEP_MODES = new Mode[] { STEP_MUTE, STEP_VELOCITY, STEP_JUMP, STEP_PLAY };
 
     public void selectSession(int index);
-    public void selectPattern(int index);
     public void selectPatterns(int minIndex, int maxIndex);
     public void selectTrack(int index);
     public void selectStep(int index);
