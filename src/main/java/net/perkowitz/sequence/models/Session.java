@@ -11,11 +11,19 @@ public class Session {
     @Getter @Setter private static int patternCount = 8;
     @Getter private Pattern[] patterns;
 
-    public Session() {
+    @Getter private int index;
+    @Getter @Setter private boolean selected = false;
+
+    // only used for deserializing JSON; Session should always be created with an index
+    public Session() {}
+
+    public Session(int index) {
+
+        this.index = index;
 
         this.patterns = new Pattern[patternCount];
         for (int i = 0; i < patternCount; i++) {
-            patterns[i] = new Pattern();
+            patterns[i] = new Pattern(i);
         }
 
     }

@@ -3,15 +3,11 @@ package net.perkowitz.sequence.launchpad;
 import com.google.common.collect.Maps;
 import net.perkowitz.sequence.SequencerDisplay;
 import net.perkowitz.sequence.SequencerInterface;
-import net.perkowitz.sequence.models.Memory;
-import net.perkowitz.sequence.models.Pattern;
-import net.perkowitz.sequence.models.Step;
-import net.perkowitz.sequence.models.Track;
+import net.perkowitz.sequence.models.*;
 import net.thecodersbreakfast.lp4j.api.*;
 
 import java.util.Map;
 
-import static net.perkowitz.sequence.SequencerInterface.TRACK_MODES;
 import static net.perkowitz.sequence.launchpad.LaunchpadUtil.*;
 
 /**
@@ -29,9 +25,9 @@ public class LaunchpadDisplay implements SequencerDisplay {
         modeButtonMap.put(SequencerInterface.Mode.SAVE, Button.SESSION);
         modeButtonMap.put(SequencerInterface.Mode.LOAD, Button.USER_1);
         modeButtonMap.put(SequencerInterface.Mode.HELP, Button.USER_2);
-        modeButtonMap.put(SequencerInterface.Mode.COPY, Button.UP);
-        modeButtonMap.put(SequencerInterface.Mode.CLEAR, Button.DOWN);
-        modeButtonMap.put(SequencerInterface.Mode.PATTERN_EDIT, Button.LEFT);
+//        modeButtonMap.put(SequencerInterface.Mode.COPY, Button.UP);
+//        modeButtonMap.put(SequencerInterface.Mode.CLEAR, Button.DOWN);
+        modeButtonMap.put(SequencerInterface.Mode.PATTERN_EDIT, Button.UP);
 
         int modeButtonRow = 3;
         modePadMap.put(SequencerInterface.Mode.TRACK_MUTE, Pad.at(0, modeButtonRow));
@@ -53,7 +49,12 @@ public class LaunchpadDisplay implements SequencerDisplay {
 
     public void displayAll(Memory memory, Map<SequencerInterface.Mode,Boolean> modeIsActiveMap) {
 
-        Pattern pattern = memory.getSelectedPattern();
+        Session session = memory.selectedSession();
+        for (Pattern pattern : session.getPatterns()) {
+            displayPattern(pattern);
+        }
+
+        Pattern pattern = memory.selectedPattern();
         for (Track track : pattern.getTracks()) {
             displayTrack(track);
         }
@@ -67,16 +68,21 @@ public class LaunchpadDisplay implements SequencerDisplay {
     public void displayHelp() {
 
         // session buttons are yellow
-        Color sessionColor = Color.of(1,2);
-        for (int y = SESSIONS_MIN_ROW; y <= SESSIONS_MAX_ROW; y++) {
-            for (int x = 0; x < 8; x++) {
-                launchpadClient.setPadLight(Pad.at(x, y), sessionColor, BackBufferOperation.NONE);
-            }
-        }
+//        Color sessionColor = Color.of(1,2);
+//        for (int y = SESSIONS_MIN_ROW; y <= SESSIONS_MAX_ROW; y++) {
+//            for (int x = 0; x < 8; x++) {
+//                launchpadClient.setPadLight(Pad.at(x, y), sessionColor, BackBufferOperation.NONE);
+//            }
+//        }
 
         // pattern buttons are green
         Color patternColor = LaunchpadUtil.COLOR_PLAYING_DIM;
         for (int y = LaunchpadUtil.PATTERNS_MIN_ROW; y <= LaunchpadUtil.PATTERNS_MAX_ROW; y++) {
+            for (int x = 0; x < 8; x++) {
+                launchpadClient.setPadLight(Pad.at(x, y), patternColor, BackBufferOperation.NONE);
+            }
+        }
+        for (int y = LaunchpadUtil.FILLS_MIN_ROW; y <= LaunchpadUtil.FILLS_MAX_ROW; y++) {
             for (int x = 0; x < 8; x++) {
                 launchpadClient.setPadLight(Pad.at(x, y), patternColor, BackBufferOperation.NONE);
             }
@@ -109,11 +115,44 @@ public class LaunchpadDisplay implements SequencerDisplay {
 
     }
 
+    public void displayPattern(Pattern pattern) {
+
+        int x = getX(pattern.getIndex());
+        int y = LaunchpadUtil.PATTERNS_MIN_ROW + getY(pattern.getIndex());
+
+        Color color = COLOR_PLAYING_DIM;
+        if (pattern.isSelected() && pattern.isPlaying()) {
+            color = COLOR_SELECTED;
+        } else if (pattern.isSelected()) {
+            color = COLOR_SELECTED_DIM;
+        } else if (pattern.isPlaying())  {
+            color = COLOR_PLAYING;
+        } else if (pattern.isChained())  {
+            color = COLOR_DISABLED;
+        }
+        System.out.printf("displayPattern: %s, x=%d, y=%d, sel=%s, play=%s, chained=%s, color=%d,%d\n",
+                pattern, x, y, pattern.isSelected(), pattern.isPlaying(), pattern.isChained(),
+                color.getRed(), color.getGreen());
+
+        launchpadClient.setPadLight(Pad.at(x, y), color, BackBufferOperation.NONE);
+
+        if (pattern.isSelected()) {
+            for (Track track : pattern.getTracks()) {
+                displayTrack(track);
+            }
+        }
+
+    }
 
     public void displayTrack(Track track) {
+        displayTrack(track, true);
+    }
+
+    public void displayTrack(Track track, boolean displaySteps) {
 
         int x = getX(track.getIndex());
         int y = LaunchpadUtil.TRACKS_MIN_ROW + getY(track.getIndex());
+//        System.out.printf("displayTrack: %s, x=%d, y=%d\n", track, x, y);
         if (track.isPlaying()) {
             if (track.isEnabled()) {
                 launchpadClient.setPadLight(Pad.at(x, y), LaunchpadUtil.COLOR_PLAYING, BackBufferOperation.NONE);
@@ -126,8 +165,10 @@ public class LaunchpadDisplay implements SequencerDisplay {
             } else {
                 launchpadClient.setPadLight(Pad.at(x, y), LaunchpadUtil.COLOR_SELECTED_DIM, BackBufferOperation.NONE);
             }
-            for (int i = 0; i < Track.getStepCount(); i++) {
-                displayStep(track.getStep(i));
+            if (displaySteps) {
+                for (int i = 0; i < Track.getStepCount(); i++) {
+                    displayStep(track.getStep(i));
+                }
             }
         } else {
             if (track.isEnabled()) {
@@ -141,6 +182,7 @@ public class LaunchpadDisplay implements SequencerDisplay {
     public void displayStep(Step step) {
         int x = getX(step.getIndex());
         int y = STEPS_MIN_ROW + getY(step.getIndex());
+//        System.out.printf("displayStep: %s, x=%d, y=%d\n", step, x, y);
 //        if (step.isSelected()) {
 //            launchpadClient.setPadLight(Pad.at(x, y), COLOR_SELECTED, BackBufferOperation.NONE);
 //        } else if (step.isOn()) {

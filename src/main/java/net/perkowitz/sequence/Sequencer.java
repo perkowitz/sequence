@@ -1,19 +1,20 @@
 package net.perkowitz.sequence;
 
 import com.google.common.collect.Maps;
-import net.perkowitz.sequence.models.*;
+import com.google.common.collect.Sets;
+import net.perkowitz.sequence.models.Memory;
+import net.perkowitz.sequence.models.Pattern;
+import net.perkowitz.sequence.models.Step;
 import net.perkowitz.sequence.models.Track;
-import net.thecodersbreakfast.lp4j.api.*;
 import org.codehaus.jackson.map.ObjectMapper;
 
-import javax.sound.midi.*;
+import javax.sound.midi.InvalidMidiDataException;
+import javax.sound.midi.MidiDevice;
+import javax.sound.midi.Receiver;
+import javax.sound.midi.ShortMessage;
 import java.io.File;
-import java.util.Map;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.*;
 import java.util.concurrent.CountDownLatch;
-
-import static net.perkowitz.sequence.launchpad.LaunchpadUtil.*;
 
 /**
  * Created by optic on 7/8/16.
@@ -21,6 +22,7 @@ import static net.perkowitz.sequence.launchpad.LaunchpadUtil.*;
 public class Sequencer implements SequencerInterface {
 
     public enum StepMode { MUTE, VELOCITY, JUMP, PLAY }
+    private static final int DEFAULT_TIMER = 125;
 
     ObjectMapper objectMapper = new ObjectMapper();
 
@@ -34,12 +36,13 @@ public class Sequencer implements SequencerInterface {
 
     private Memory memory;
     private int totalStepCount = 0;
-    private int playingStepNumber = 0;
+    private int nextStepIndex = 0;
 
     // sequencer states
     private boolean playing = false;
     private boolean trackSelectMode = true;
     private StepMode stepMode = StepMode.MUTE;
+    private boolean patternEditMode = false;
 
     private static CountDownLatch stop = new CountDownLatch(1);
 
@@ -56,10 +59,10 @@ public class Sequencer implements SequencerInterface {
         this.sequenceOutput.open();
         this.sequenceReceiver = sequenceOutput.getReceiver();
 
-//        load();
+        load();
         if (memory == null) {
             memory = new Memory();
-            memory.select(memory.getSelectedPattern().getTrack(8));
+            memory.select(memory.selectedPattern().getTrack(8));
         }
 
         for (Mode mode : Mode.values()) {
@@ -88,27 +91,58 @@ public class Sequencer implements SequencerInterface {
 
     }
 
-    public void selectPattern(int index) {
+    public void selectPatterns(int minIndex, int maxIndex) {
+
+        System.out.printf("selectPatterns: %d - %d\n", minIndex, maxIndex);
+
+        if (patternEditMode) {
+            Pattern selected = memory.selectedPattern();
+            Pattern pattern = memory.selectedSession().getPattern(minIndex);
+            memory.setSpecialSelected(true);
+            memory.select(pattern);
+            display.displayPattern(selected);
+            display.displayPattern(pattern);
+        } else {
+            // retrieve current selected pattern and chain and save them to re-display
+            Set<Pattern> patternsToDisplay = Sets.newHashSet();
+            patternsToDisplay.add(memory.selectedPattern());
+            patternsToDisplay.addAll(memory.getPatternChain());
+
+
+            // select the new pattern and set it as the chain (chained)
+            List<Pattern> newChain = memory.setPatternChain(minIndex, maxIndex, minIndex);
+            if (!playing) {
+                // if not currently playing, you can advance directly to the new pattern
+                //memory.advancePattern();
+            }
+
+            // when a new chain is set, we default to normal selection (the first of the chain)
+            memory.setSpecialSelected(false);
+            memory.select(newChain.get(0));
+            patternsToDisplay.addAll(newChain);
+
+            // update display of all affected patterns
+            for (Pattern pattern : patternsToDisplay) {
+                display.displayPattern(pattern);
+            }
+        }
 
     }
 
+
     public void selectTrack(int index) {
 
+        Track track = memory.selectedPattern().getTrack(index);
+        System.out.printf("selectTrack: %d, %s\n", index, track);
         if (trackSelectMode) {
             // unselect the currently selected track
-            memory.getSelectedTrack().setSelected(false);
-            display.displayTrack(memory.getSelectedTrack());
-
-            // select the new track
-            int selectedTrackNumber = index;
-            net.perkowitz.sequence.models.Track selectedTrack = memory.getSelectedPattern().getTrack(selectedTrackNumber);
-            memory.setSelectedTrack(selectedTrack);
-            selectedTrack.setSelected(true);
-            display.displayTrack(selectedTrack);
+            Track currentTrack = memory.selectedTrack();
+            memory.select(track);
+            display.displayTrack(currentTrack);
+            display.displayTrack(track);
 
         } else {
             // toggle track enabled
-            net.perkowitz.sequence.models.Track track = memory.getSelectedPattern().getTrack(index);
             track.setEnabled(!track.isEnabled());
             display.displayTrack(track);
 
@@ -118,34 +152,52 @@ public class Sequencer implements SequencerInterface {
 
     public void selectStep(int index) {
 
-        Step step = memory.getSelectedTrack().getStep(index);
+        System.out.printf("selectStep: %d, %s\n", index, stepMode);
+        Step step = memory.selectedTrack().getStep(index);
         if (stepMode == StepMode.MUTE) {
+            // in mute mode, both mute/unmute and select that step
             step.setOn(!step.isOn());
+            memory.select(step);
             display.displayStep(step);
-            memory.setSelectedStep(step);
             display.displayValue(step.getVelocity());
         } else if (stepMode == StepMode.JUMP) {
-            playingStepNumber = (index + (net.perkowitz.sequence.models.Track.getStepCount() - 1)) % net.perkowitz.sequence.models.Track.getStepCount();
+            setNextStepIndex(index);
+            nextStepIndex = (index + net.perkowitz.sequence.models.Track.getStepCount()) % net.perkowitz.sequence.models.Track.getStepCount();
         } else if (stepMode == StepMode.VELOCITY) {
-            memory.setSelectedStep(step);
+            memory.select(step);
             display.displayValue(step.getVelocity());
         } else if (stepMode == StepMode.PLAY) {
-            net.perkowitz.sequence.models.Track track = memory.getSelectedPattern().getTrack(index);
+            net.perkowitz.sequence.models.Track track = memory.selectedPattern().getTrack(index);
             sendMidiNote(track.getMidiChannel(), track.getNoteNumber(), 100);
         }
     }
 
     public void selectValue(int index) {
-        if (memory.getSelectedStep() != null) {
+        System.out.printf("selectValue: %d\n", index);
+        Step step = memory.selectedStep();
+        if (step != null) {
             int velocity = ((index+1)*16) - 1;
-            memory.getSelectedStep().setVelocity(velocity);
+            System.out.printf("- for step %s, v=%d, set v=%d\n", step, step.getVelocity(), velocity);
+            step.setVelocity(velocity);
             display.displayValue(velocity);
         }
     }
 
     public void selectMode(Mode mode) {
 
+        System.out.printf("selectMode: %s\n", mode);
         switch (mode) {
+
+            case PATTERN_PLAY:
+                patternEditMode = false;
+                display.displayMode(Mode.PATTERN_EDIT, false);
+                break;
+
+            case PATTERN_EDIT:
+                patternEditMode = true;
+                display.displayMode(Mode.PATTERN_EDIT, true);
+                break;
+
             case TRACK_MUTE:
                 trackSelectMode = false;
                 display.displayModeChoice(Mode.TRACK_MUTE, TRACK_MODES);
@@ -154,8 +206,8 @@ public class Sequencer implements SequencerInterface {
             case TRACK_EDIT:
                 if (trackSelectMode) {
                     // if you press select mode a second time, it unselects the selected track (so no track is selected)
-                    memory.getSelectedTrack().setSelected(false);
-                    display.displayTrack(memory.getSelectedTrack());
+                    memory.selectedTrack().setSelected(false);
+                    display.displayTrack(memory.selectedTrack());
 //                    display.clearSteps();
                 }
                 trackSelectMode = true;
@@ -165,26 +217,26 @@ public class Sequencer implements SequencerInterface {
             case STEP_MUTE:
                 stepMode = StepMode.MUTE;
                 display.displayModeChoice(Mode.STEP_MUTE, STEP_MODES);
-                display.displayTrack(memory.getSelectedTrack());
+                display.displayTrack(memory.selectedTrack());
                 break;
 
             case STEP_VELOCITY:
                 stepMode = stepMode.VELOCITY;
                 display.displayModeChoice(Mode.STEP_VELOCITY, STEP_MODES);
-                display.displayTrack(memory.getSelectedTrack());
+                display.displayTrack(memory.selectedTrack());
                 break;
 
             case STEP_JUMP:
                 stepMode = stepMode.JUMP;
                 display.displayModeChoice(Mode.STEP_JUMP, STEP_MODES);
-                memory.setSelectedStep(null);
+//                memory.setSelectedStep(null);
                 display.clearSteps();
                 break;
 
             case STEP_PLAY:
                 stepMode = stepMode.PLAY;
                 display.displayModeChoice(Mode.STEP_PLAY, STEP_MODES);
-                memory.setSelectedStep(null);
+//                memory.setSelectedStep(null);
                 display.clearSteps();
                 break;
 
@@ -228,7 +280,13 @@ public class Sequencer implements SequencerInterface {
             display.displayMode(Mode.PLAY, false);
             totalStepCount = 0;
         }
-        playingStepNumber = net.perkowitz.sequence.models.Track.getStepCount()-1;
+        nextStepIndex = 0;
+        memory.resetPatternChainIndex();
+        List<Pattern> patternChain = memory.getPatternChain();
+        if (patternChain.size() > 0) {
+//            nextPattern(patternChain.get(0));
+        }
+
     }
 
     public void startTimer() {
@@ -245,43 +303,53 @@ public class Sequencer implements SequencerInterface {
                     advance(andReset);
                 }
             }
-        }, 125, 125);
+        }, DEFAULT_TIMER, DEFAULT_TIMER);
 
 
     }
 
-    private void advancePlayStep() {
-        setPlayStep(playingStepNumber+1);
+    private void setNextStepIndex(int stepNumber) {
+        nextStepIndex = (stepNumber + Track.getStepCount()) % Track.getStepCount();
     }
 
-    private void setPlayStep(int stepNumber) {
-
-        // reset current step to normal appearance
-        // NB: assumes that the play steps are always displayed using the step buttons
-        int oldStepNumber = playingStepNumber;
-        display.displayStep(memory.getSelectedTrack().getStep(oldStepNumber));
-
-        // move the playing step and display it
-        playingStepNumber = (stepNumber + Track.getStepCount()) % Track.getStepCount();
-        display.displayPlayingStep(playingStepNumber);
-
+    private void nextPattern(Pattern nextPattern) {
+        Pattern playingPattern = memory.playingPattern();
+        System.out.printf("nextPattern: playing=%s, chained=%s\n", playingPattern, nextPattern);
+        if (nextPattern != playingPattern) {
+            int selectedTrackIndex = memory.selectedTrack().getIndex();
+            memory.select(nextPattern);
+            memory.select(nextPattern.getTrack(selectedTrackIndex));
+            display.displayPattern(playingPattern);
+            display.displayPattern(nextPattern);
+        }
 
     }
 
     private void advance(boolean andReset) {
 
-        totalStepCount++;
-
-        // determine the new step number and display it
-        int newStepNumber = playingStepNumber + 1;
         if (andReset) {
-            newStepNumber = 0;
+            nextStepIndex = 0;
         }
-        setPlayStep(newStepNumber);
+
+        // new pattern on reset/0
+        if (nextStepIndex == 0) {
+            System.out.printf("Advance selectedPattern=%s, selectedTrack=%s\n", memory.selectedPattern(), memory.selectedTrack());
+            Pattern playing = memory.playingPattern();
+            Pattern next = memory.advancePattern();
+            if (next != playing) {
+                display.displayPattern(playing);
+                display.displayPattern(next);
+                if (!memory.isSpecialSelected()) {
+                    Pattern selected = memory.selectedPattern();
+                    display.displayPattern(selected);
+                }
+            }
+        }
 
         // send the midi notes
-        for (net.perkowitz.sequence.models.Track track : memory.getSelectedPattern().getTracks()) {
-            Step step = track.getStep(playingStepNumber);
+//        System.out.printf("Advance: send midi\n");
+        for (net.perkowitz.sequence.models.Track track : memory.playingPattern().getTracks()) {
+            Step step = track.getStep(nextStepIndex);
             if (step.isOn()) {
                 track.setPlaying(true);
             }
@@ -290,10 +358,18 @@ public class Sequencer implements SequencerInterface {
                     sendMidiNote(track.getMidiChannel(), track.getNoteNumber(), step.getVelocity());
                 }
             }
-            display.displayTrack(track);
+            display.displayTrack(track, false);
             track.setPlaying(false);
 
         }
+
+        totalStepCount++;
+        int oldStepNumber = nextStepIndex;
+        setNextStepIndex(nextStepIndex + 1);
+        // NB: assumes that the play steps are always displayed using the step buttons
+        display.displayStep(memory.selectedTrack().getStep(oldStepNumber));
+        display.displayPlayingStep(nextStepIndex);
+//        System.out.printf("Advance: done\n");
 
     }
 

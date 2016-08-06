@@ -1,6 +1,7 @@
 package net.perkowitz.sequence;
 
 import net.perkowitz.sequence.models.Memory;
+import net.perkowitz.sequence.models.Pattern;
 import net.perkowitz.sequence.models.Step;
 import net.perkowitz.sequence.models.Track;
 
@@ -22,6 +23,9 @@ public interface SequencerDisplay {
     public void displayAll(Memory memory, Map<SequencerInterface.Mode,Boolean> modeIsActiveMap);
     public void displayHelp();
 
+    public void displayPattern(Pattern pattern);
+
+    public void displayTrack(Track track, boolean displaySteps);
     public void displayTrack(Track track);
 
     public void displayStep(Step step);

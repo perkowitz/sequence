@@ -21,4 +21,9 @@ public class Step {
         this.index = index;
     }
 
+    @Override
+    public String toString() {
+        return "Step:" + getIndex();
+    }
+
 }

@@ -1,18 +1,6 @@
 package net.perkowitz.sequence;
 
-import net.perkowitz.sequence.launchpad.LaunchpadController;
-import net.perkowitz.sequence.launchpad.LaunchpadDisplay;
-import net.perkowitz.sequence.models.Memory;
-import net.perkowitz.sequence.models.Pattern;
-import net.perkowitz.sequence.models.Session;
-import net.thecodersbreakfast.lp4j.api.Launchpad;
-import net.thecodersbreakfast.lp4j.api.LaunchpadClient;
-import net.thecodersbreakfast.lp4j.midi.MidiDeviceConfiguration;
-import net.thecodersbreakfast.lp4j.midi.MidiLaunchpad;
-
-import javax.sound.midi.MidiDevice;
 import javax.sound.midi.MidiSystem;
-import javax.sound.midi.MidiUnavailableException;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
