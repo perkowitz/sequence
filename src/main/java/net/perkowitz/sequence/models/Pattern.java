@@ -47,6 +47,12 @@ public class Pattern {
         tracks[index].setSelected(true);
     }
 
+    public void copyMutes(Pattern pattern) {
+        for (int i = 0; i < trackCount; i++) {
+            tracks[i].setEnabled(pattern.getTrack(i).isEnabled());
+        }
+    }
+
     @Override
     public String toString() {
         return "Pattern:" + getIndex();

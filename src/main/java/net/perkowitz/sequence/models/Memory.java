@@ -23,7 +23,9 @@ public class Memory {
     @Getter private int patternChainMin;    // the index of the first of the playing pattern chain
     @Getter private int patternChainMax;    // the index of the last of the pattern chain
     @Getter private int patternChainIndex;  // the index of the NEXT pattern to play
+
     @Getter @Setter private boolean specialSelected = false;
+    @Getter @Setter private boolean copyMutesToNew = true;
 
     public Memory() {
 
@@ -151,6 +153,9 @@ public class Memory {
             }
             next = playingPattern();
             next.setPlaying(true);
+            if (copyMutesToNew) {
+                next.copyMutes(playing);
+            }
 
             if (!specialSelected) {
                 select(next);
