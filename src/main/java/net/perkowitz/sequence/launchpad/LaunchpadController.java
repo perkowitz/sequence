@@ -49,22 +49,22 @@ public class LaunchpadController extends LaunchpadListenerAdapter implements Seq
                 int index = pad.getX() + (pad.getY() - STEPS_MIN_ROW) * 8;
                 sequencer.selectStep(index);
 
-            } else if (pad.equals(TRACK_MUTE_MODE)) {
+            } else if (pad.equals(modePadMap.get(SequencerInterface.Mode.TRACK_MUTE))) {
                 sequencer.selectMode(SequencerInterface.Mode.TRACK_MUTE);
 
-            } else if (pad.equals(TRACK_SELECT_MODE)) {
+            } else if (pad.equals(modePadMap.get(SequencerInterface.Mode.TRACK_EDIT))) {
                 sequencer.selectMode(SequencerInterface.Mode.TRACK_EDIT);
 
-            } else if (pad.equals(STEP_MUTE_MODE)) {
+            } else if (pad.equals(modePadMap.get(SequencerInterface.Mode.STEP_MUTE))) {
                 sequencer.selectMode(SequencerInterface.Mode.STEP_MUTE);
 
-            } else if (pad.equals(STEP_VELOCITY_MODE)) {
+            } else if (pad.equals(modePadMap.get(SequencerInterface.Mode.STEP_VELOCITY))) {
                 sequencer.selectMode(SequencerInterface.Mode.STEP_VELOCITY);
 
-            } else if (pad.equals(STEP_JUMP_MODE)) {
+            } else if (pad.equals(modePadMap.get(SequencerInterface.Mode.STEP_JUMP))) {
                 sequencer.selectMode(SequencerInterface.Mode.STEP_JUMP);
 
-            } else if (pad.equals(STEP_PLAY_MODE)) {
+            } else if (pad.equals(modePadMap.get(SequencerInterface.Mode.STEP_PLAY))) {
                 sequencer.selectMode(SequencerInterface.Mode.STEP_PLAY);
 
             }
@@ -119,19 +119,19 @@ public class LaunchpadController extends LaunchpadListenerAdapter implements Seq
 
         System.out.printf("onButtonPressed: %s, %s\n", button, timestamp);
 
-        if (button.equals(BUTTON_PLAY)) {
+        if (button.equals(modeButtonMap.get(SequencerInterface.Mode.PLAY))) {
             sequencer.selectMode(SequencerInterface.Mode.PLAY);
 
-        } else if (button.equals(BUTTON_EXIT)) {
+        } else if (button.equals(modeButtonMap.get(SequencerInterface.Mode.EXIT))) {
             sequencer.selectMode(SequencerInterface.Mode.EXIT);
 
-        } else if (button.equals(BUTTON_SAVE)) {
+        } else if (button.equals(modeButtonMap.get(SequencerInterface.Mode.SAVE))) {
             sequencer.selectMode(SequencerInterface.Mode.SAVE);
 
-        } else if (button.equals(BUTTON_HELP)) {
+        } else if (button.equals(modeButtonMap.get(SequencerInterface.Mode.HELP))) {
             sequencer.selectMode(SequencerInterface.Mode.HELP);
 
-        } else if (button.equals(BUTTON_PATTERN_EDIT)) {
+        } else if (button.equals(modeButtonMap.get(SequencerInterface.Mode.PATTERN_EDIT))) {
             sequencer.selectMode(SequencerInterface.Mode.PATTERN_EDIT);
 
         } else if (button.isRightButton()) {
@@ -144,7 +144,7 @@ public class LaunchpadController extends LaunchpadListenerAdapter implements Seq
     @Override
     public void onButtonReleased(Button button, long timestamp) {
 
-        if (button.equals(BUTTON_PATTERN_EDIT)) {
+        if (button.equals(modeButtonMap.get(SequencerInterface.Mode.PATTERN_EDIT))) {
             sequencer.selectMode(SequencerInterface.Mode.PATTERN_PLAY);
         }
 

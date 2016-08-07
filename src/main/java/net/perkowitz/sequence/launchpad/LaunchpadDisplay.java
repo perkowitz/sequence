@@ -17,28 +17,6 @@ public class LaunchpadDisplay implements SequencerDisplay {
 
     private LaunchpadClient launchpadClient;
 
-    private static Map<SequencerInterface.Mode, Button> modeButtonMap = Maps.newHashMap();
-    private static Map<SequencerInterface.Mode, Pad> modePadMap = Maps.newHashMap();
-    static {
-        modeButtonMap.put(SequencerInterface.Mode.PLAY, Button.RIGHT);
-        modeButtonMap.put(SequencerInterface.Mode.EXIT, Button.MIXER);
-        modeButtonMap.put(SequencerInterface.Mode.SAVE, Button.SESSION);
-        modeButtonMap.put(SequencerInterface.Mode.LOAD, Button.USER_1);
-        modeButtonMap.put(SequencerInterface.Mode.HELP, Button.USER_2);
-//        modeButtonMap.put(SequencerInterface.Mode.COPY, Button.UP);
-//        modeButtonMap.put(SequencerInterface.Mode.CLEAR, Button.DOWN);
-        modeButtonMap.put(SequencerInterface.Mode.PATTERN_EDIT, Button.UP);
-
-        int modeButtonRow = 3;
-        modePadMap.put(SequencerInterface.Mode.TRACK_MUTE, Pad.at(0, modeButtonRow));
-        modePadMap.put(SequencerInterface.Mode.TRACK_EDIT, Pad.at(1, modeButtonRow));
-        modePadMap.put(SequencerInterface.Mode.STEP_MUTE, Pad.at(4, modeButtonRow));
-        modePadMap.put(SequencerInterface.Mode.STEP_VELOCITY, Pad.at(5, modeButtonRow));
-        modePadMap.put(SequencerInterface.Mode.STEP_JUMP, Pad.at(6, modeButtonRow));
-        modePadMap.put(SequencerInterface.Mode.STEP_PLAY, Pad.at(7, modeButtonRow));
-    }
-
-
     public LaunchpadDisplay(LaunchpadClient launchpadClient) {
         this.launchpadClient = launchpadClient;
     }
@@ -87,8 +65,8 @@ public class LaunchpadDisplay implements SequencerDisplay {
                 launchpadClient.setPadLight(Pad.at(x, y), patternColor, BackBufferOperation.NONE);
             }
         }
-        launchpadClient.setPadLight(LaunchpadUtil.TRACK_MUTE_MODE, patternColor, BackBufferOperation.NONE);
-        launchpadClient.setPadLight(LaunchpadUtil.TRACK_SELECT_MODE, patternColor, BackBufferOperation.NONE);
+        launchpadClient.setPadLight(modePadMap.get(SequencerInterface.Mode.TRACK_MUTE), patternColor, BackBufferOperation.NONE);
+        launchpadClient.setPadLight(modePadMap.get(SequencerInterface.Mode.TRACK_EDIT), patternColor, BackBufferOperation.NONE);
 
         // track buttons are orange
         Color trackColor = LaunchpadUtil.COLOR_SELECTED_DIM;
@@ -97,8 +75,8 @@ public class LaunchpadDisplay implements SequencerDisplay {
                 launchpadClient.setPadLight(Pad.at(x, y), trackColor, BackBufferOperation.NONE);
             }
         }
-        launchpadClient.setPadLight(LaunchpadUtil.TRACK_MUTE_MODE, trackColor, BackBufferOperation.NONE);
-        launchpadClient.setPadLight(LaunchpadUtil.TRACK_SELECT_MODE, trackColor, BackBufferOperation.NONE);
+        launchpadClient.setPadLight(modePadMap.get(SequencerInterface.Mode.TRACK_MUTE), trackColor, BackBufferOperation.NONE);
+        launchpadClient.setPadLight(modePadMap.get(SequencerInterface.Mode.TRACK_EDIT), trackColor, BackBufferOperation.NONE);
 
         // step buttons are red
         Color stepColor = LaunchpadUtil.COLOR_DISABLED;
@@ -108,10 +86,10 @@ public class LaunchpadDisplay implements SequencerDisplay {
             }
         }
         // step mode buttons
-        launchpadClient.setPadLight(LaunchpadUtil.STEP_MUTE_MODE, stepColor, BackBufferOperation.NONE);
-        launchpadClient.setPadLight(LaunchpadUtil.STEP_VELOCITY_MODE, stepColor, BackBufferOperation.NONE);
-        launchpadClient.setPadLight(LaunchpadUtil.STEP_JUMP_MODE, stepColor, BackBufferOperation.NONE);
-        launchpadClient.setPadLight(LaunchpadUtil.STEP_PLAY_MODE, stepColor, BackBufferOperation.NONE);
+        launchpadClient.setPadLight(modePadMap.get(SequencerInterface.Mode.STEP_MUTE), stepColor, BackBufferOperation.NONE);
+        launchpadClient.setPadLight(modePadMap.get(SequencerInterface.Mode.STEP_VELOCITY), stepColor, BackBufferOperation.NONE);
+        launchpadClient.setPadLight(modePadMap.get(SequencerInterface.Mode.STEP_JUMP), stepColor, BackBufferOperation.NONE);
+        launchpadClient.setPadLight(modePadMap.get(SequencerInterface.Mode.STEP_PLAY), stepColor, BackBufferOperation.NONE);
 
     }
 
