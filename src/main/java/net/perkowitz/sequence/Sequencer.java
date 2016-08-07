@@ -16,6 +16,9 @@ import java.io.File;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
 
+import static net.perkowitz.sequence.SequencerInterface.ValueMode.TEMPO;
+import static net.perkowitz.sequence.SequencerInterface.ValueMode.VELOCITY;
+
 /**
  * Created by optic on 7/8/16.
  */
@@ -23,6 +26,10 @@ public class Sequencer implements SequencerInterface {
 
     public enum StepMode { MUTE, VELOCITY, JUMP, PLAY }
     private static final int DEFAULT_TIMER = 125;
+    private static final int VELOCITY_MIN = 0;
+    private static final int VELOCITY_MAX = 128;
+    private static final int TEMPO_MIN = 100;
+    private static final int TEMPO_MAX = 132;
 
     ObjectMapper objectMapper = new ObjectMapper();
 
@@ -37,14 +44,18 @@ public class Sequencer implements SequencerInterface {
     private Memory memory;
     private int totalStepCount = 0;
     private int nextStepIndex = 0;
+    private int tempo = 120;
+    private int tempoIntervalInMillis = 125 * 120 / tempo;
 
     // sequencer states
     private boolean playing = false;
     private boolean trackSelectMode = true;
     private StepMode stepMode = StepMode.MUTE;
     private boolean patternEditMode = false;
+    private ValueMode valueMode = VELOCITY;
 
     private static CountDownLatch stop = new CountDownLatch(1);
+    private Timer timer = null;
 
 
     /***** constructor *********************************************************************/
@@ -159,13 +170,13 @@ public class Sequencer implements SequencerInterface {
             step.setOn(!step.isOn());
             memory.select(step);
             display.displayStep(step);
-            display.displayValue(step.getVelocity());
+            display.displayValue(step.getVelocity(), VELOCITY_MIN, VELOCITY_MAX, ValueMode.VELOCITY);
         } else if (stepMode == StepMode.JUMP) {
             setNextStepIndex(index);
             nextStepIndex = (index + net.perkowitz.sequence.models.Track.getStepCount()) % net.perkowitz.sequence.models.Track.getStepCount();
         } else if (stepMode == StepMode.VELOCITY) {
             memory.select(step);
-            display.displayValue(step.getVelocity());
+            display.displayValue(step.getVelocity(), VELOCITY_MIN, VELOCITY_MAX, ValueMode.VELOCITY);
         } else if (stepMode == StepMode.PLAY) {
             net.perkowitz.sequence.models.Track track = memory.selectedPattern().getTrack(index);
             sendMidiNote(track.getMidiChannel(), track.getNoteNumber(), 100);
@@ -174,12 +185,20 @@ public class Sequencer implements SequencerInterface {
 
     public void selectValue(int index) {
         System.out.printf("selectValue: %d\n", index);
-        Step step = memory.selectedStep();
-        if (step != null) {
-            int velocity = ((index+1)*16) - 1;
-            System.out.printf("- for step %s, v=%d, set v=%d\n", step, step.getVelocity(), velocity);
-            step.setVelocity(velocity);
-            display.displayValue(velocity);
+        if (valueMode == VELOCITY) {
+            Step step = memory.selectedStep();
+            if (step != null) {
+                int velocity = ((index + 1) * 16) - 1;
+                System.out.printf("- for step %s, v=%d, set v=%d\n", step, step.getVelocity(), velocity);
+                step.setVelocity(velocity);
+                display.displayValue(velocity, VELOCITY_MIN, VELOCITY_MAX, ValueMode.VELOCITY);
+            }
+        } else if (valueMode == TEMPO) {
+            tempo = index * (TEMPO_MAX - TEMPO_MIN) / 8 + TEMPO_MIN;
+            tempoIntervalInMillis = 125 * 120 / tempo;
+            System.out.printf("Tempo: %d, %d\n", tempo, tempoIntervalInMillis);
+            display.displayValue(tempo, TEMPO_MIN, TEMPO_MAX, ValueMode.TEMPO);
+            startTimer();
         }
     }
 
@@ -244,6 +263,16 @@ public class Sequencer implements SequencerInterface {
                 toggleStartStop();
                 break;
 
+            case TEMPO:
+                valueMode = TEMPO;
+                display.displayValue(tempo, TEMPO_MIN, TEMPO_MAX, TEMPO);
+                break;
+
+            case NO_VALUE:
+                valueMode = VELOCITY;
+                display.clearValue();
+                break;
+
             case EXIT:
                 shutdown();
                 break;
@@ -291,7 +320,11 @@ public class Sequencer implements SequencerInterface {
 
     public void startTimer() {
 
-        Timer timer = new Timer();
+        if (timer != null) {
+            timer.cancel();
+        }
+
+        timer = new Timer();
 
         timer.scheduleAtFixedRate(new TimerTask() {
             public void run() {
@@ -303,9 +336,7 @@ public class Sequencer implements SequencerInterface {
                     advance(andReset);
                 }
             }
-        }, DEFAULT_TIMER, DEFAULT_TIMER);
-
-
+        }, tempoIntervalInMillis, tempoIntervalInMillis);
     }
 
     private void setNextStepIndex(int stepNumber) {

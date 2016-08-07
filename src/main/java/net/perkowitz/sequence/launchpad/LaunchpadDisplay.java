@@ -218,16 +218,27 @@ public class LaunchpadDisplay implements SequencerDisplay {
         }
     }
 
-    public void displayValue(int value) {
+    public void clearValue() {
+        for (int b = 0; b < 8; b++) {
+            launchpadClient.setButtonLight(Button.atRight(7-b), COLOR_EMPTY, BackBufferOperation.NONE);
+        }
+    }
 
-        int buttons = (value * 8) / 128;
+    public void displayValue(int value, int minValue, int maxValue, SequencerInterface.ValueMode valueMode) {
+
+        int buttons = 8 * (value - minValue) / (maxValue - minValue);
+
+        Color color = LaunchpadUtil.COLOR_DISABLED;
+        if (valueMode == SequencerInterface.ValueMode.TEMPO) {
+            color = LaunchpadUtil.COLOR_PLAYING;
+        }
 
         for (int b = 0; b < 8; b++) {
-            Color color = LaunchpadUtil.COLOR_EMPTY;
+            Color buttonColor = LaunchpadUtil.COLOR_EMPTY;
             if (b <= buttons) {
-                color = LaunchpadUtil.COLOR_DISABLED;
+                buttonColor = color;
             }
-            launchpadClient.setButtonLight(Button.atRight(7-b), color, BackBufferOperation.NONE);
+            launchpadClient.setButtonLight(Button.atRight(7-b), buttonColor, BackBufferOperation.NONE);
         }
 
     }

@@ -125,12 +125,15 @@ public class LaunchpadController extends LaunchpadListenerAdapter implements Seq
         } else if (button.equals(modeButtonMap.get(SequencerInterface.Mode.EXIT))) {
             sequencer.selectMode(SequencerInterface.Mode.EXIT);
 
+        } else if (button.equals(modeButtonMap.get(SequencerInterface.Mode.TEMPO))) {
+            sequencer.selectMode(SequencerInterface.Mode.TEMPO);
+
         } else if (button.equals(modeButtonMap.get(SequencerInterface.Mode.SAVE))) {
             sequencer.selectMode(SequencerInterface.Mode.SAVE);
 
-        } else if (button.equals(modeButtonMap.get(SequencerInterface.Mode.HELP))) {
-            sequencer.selectMode(SequencerInterface.Mode.HELP);
-
+//        } else if (button.equals(modeButtonMap.get(SequencerInterface.Mode.HELP))) {
+//            sequencer.selectMode(SequencerInterface.Mode.HELP);
+//
         } else if (button.equals(modeButtonMap.get(SequencerInterface.Mode.PATTERN_EDIT))) {
             sequencer.selectMode(SequencerInterface.Mode.PATTERN_EDIT);
 
@@ -146,6 +149,10 @@ public class LaunchpadController extends LaunchpadListenerAdapter implements Seq
 
         if (button.equals(modeButtonMap.get(SequencerInterface.Mode.PATTERN_EDIT))) {
             sequencer.selectMode(SequencerInterface.Mode.PATTERN_PLAY);
+
+        } else if (button.equals(modeButtonMap.get(SequencerInterface.Mode.TEMPO))) {
+            sequencer.selectMode(SequencerInterface.Mode.NO_VALUE);
+
         }
 
     }
