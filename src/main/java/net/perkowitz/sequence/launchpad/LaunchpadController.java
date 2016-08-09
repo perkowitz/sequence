@@ -117,7 +117,7 @@ public class LaunchpadController extends LaunchpadListenerAdapter implements Seq
     @Override
     public void onButtonPressed(Button button, long timestamp) {
 
-        System.out.printf("onButtonPressed: %s, %s\n", button, timestamp);
+//        System.out.printf("onButtonPressed: %s, %s\n", button, timestamp);
 
         if (button.equals(modeButtonMap.get(SequencerInterface.Mode.PLAY))) {
             sequencer.selectMode(SequencerInterface.Mode.PLAY);

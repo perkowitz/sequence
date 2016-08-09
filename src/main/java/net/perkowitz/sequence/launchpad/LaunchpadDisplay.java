@@ -108,9 +108,9 @@ public class LaunchpadDisplay implements SequencerDisplay {
         } else if (pattern.isChained())  {
             color = COLOR_DISABLED;
         }
-        System.out.printf("displayPattern: %s, x=%d, y=%d, sel=%s, play=%s, chained=%s, color=%d,%d\n",
-                pattern, x, y, pattern.isSelected(), pattern.isPlaying(), pattern.isChained(),
-                color.getRed(), color.getGreen());
+//        System.out.printf("displayPattern: %s, x=%d, y=%d, sel=%s, play=%s, chained=%s, color=%d,%d\n",
+//                pattern, x, y, pattern.isSelected(), pattern.isPlaying(), pattern.isChained(),
+//                color.getRed(), color.getGreen());
 
         launchpadClient.setPadLight(Pad.at(x, y), color, BackBufferOperation.NONE);
 

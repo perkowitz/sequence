@@ -15,12 +15,14 @@ import javax.sound.midi.MidiUnavailableException;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 import java.util.Properties;
 
 
 public class RunSequencer {
 
     private static String CONTROLLER_NAME_PROPERTY = "controller.name";
+    private static String INPUT_NAME_PROPERTY = "input.name";
     private static String SEQUENCE_NAME_PROPERTY = "output.name";
 
     private static Properties properties = null;
@@ -41,24 +43,33 @@ public class RunSequencer {
 
         // find the controller midi device
         System.out.println("Finding controller device..");
-        String controllerName = properties.getProperty(CONTROLLER_NAME_PROPERTY);
-        MidiDevice controllerInput = MidiUtil.findMidiDevice(controllerName, false, true);
-        MidiDevice controllerOutput = MidiUtil.findMidiDevice(controllerName, true, false);
+        String[] controllerNames = properties.getProperty(CONTROLLER_NAME_PROPERTY).split(",");
+        MidiDevice controllerInput = MidiUtil.findMidiDevice(controllerNames, false, true);
         if (controllerInput == null) {
-            System.err.printf("Unable to find controller input device matching name: %s\n", controllerName);
+            System.err.printf("Unable to find controller input device matching name: %s\n", controllerNames);
             System.exit(1);
         }
+        MidiDevice controllerOutput = MidiUtil.findMidiDevice(controllerNames, true, false);
         if (controllerOutput == null) {
-            System.err.printf("Unable to find controller output device matching name: %s\n", controllerName);
+            System.err.printf("Unable to find controller output device matching name: %s\n", controllerNames);
+            System.exit(1);
+        }
+
+        // find the midi device for midi input
+        System.out.println("Finding input device..");
+        String[] inputNames = properties.getProperty(INPUT_NAME_PROPERTY).split(",");
+        MidiDevice midiInput = MidiUtil.findMidiDevice(inputNames, false, true);
+        if (midiInput == null) {
+            System.err.printf("Unable to find sequence output device matching name: %s\n", inputNames);
             System.exit(1);
         }
 
         // find the midi device for sequencer output
         System.out.println("Finding output device..");
-        String outputName = properties.getProperty(SEQUENCE_NAME_PROPERTY);
-        MidiDevice sequenceOutput = MidiUtil.findMidiDevice(outputName, true, false);
+        String[] outputNames = properties.getProperty(SEQUENCE_NAME_PROPERTY).split(",");
+        MidiDevice sequenceOutput = MidiUtil.findMidiDevice(outputNames, true, false);
         if (sequenceOutput == null) {
-            System.err.printf("Unable to find sequence output device matching name: %s\n", outputName);
+            System.err.printf("Unable to find sequence output device matching name: %s\n", outputNames);
             System.exit(1);
         }
 
