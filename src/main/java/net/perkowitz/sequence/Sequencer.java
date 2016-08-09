@@ -363,36 +363,49 @@ public class Sequencer implements SequencerInterface {
         }
 
         // new pattern on reset/0
+        // minimize the work before sending midi notes, so do display later
+        boolean isNewPattern = false;
+        Pattern currentPattern = null;
         if (nextStepIndex == 0) {
-            System.out.printf("Advance selectedPattern=%s, selectedTrack=%s\n", memory.selectedPattern(), memory.selectedTrack());
-            Pattern playing = memory.playingPattern();
+            currentPattern = memory.playingPattern();
             Pattern next = memory.advancePattern();
-            if (next != playing) {
-                display.displayPattern(playing);
-                display.displayPattern(next);
-                if (!memory.isSpecialSelected()) {
-                    Pattern selected = memory.selectedPattern();
-                    display.displayPattern(selected);
-                }
+            if (next != currentPattern) {
+                isNewPattern = true;
             }
         }
 
         // send the midi notes
-//        System.out.printf("Advance: send midi\n");
         for (net.perkowitz.sequence.models.Track track : memory.playingPattern().getTracks()) {
             Step step = track.getStep(nextStepIndex);
-            if (step.isOn()) {
-                track.setPlaying(true);
-            }
             if (track.isEnabled()) {
                 if (step.isOn()) {
                     sendMidiNote(track.getMidiChannel(), track.getNoteNumber(), step.getVelocity());
                 }
             }
+        }
+        // THEN update track displays
+        for (net.perkowitz.sequence.models.Track track : memory.playingPattern().getTracks()) {
+            Step step = track.getStep(nextStepIndex);
+            if (step.isOn()) {
+                track.setPlaying(true);
+            }
             display.displayTrack(track, false);
             track.setPlaying(false);
 
         }
+
+        // and display patterns
+        if (isNewPattern) {
+            Pattern next = memory.playingPattern();
+            display.displayPattern(currentPattern);
+            display.displayPattern(next);
+            if (!memory.isSpecialSelected()) {
+                Pattern selected = memory.selectedPattern();
+                display.displayPattern(selected);
+            }
+        }
+
+
 
         totalStepCount++;
         int oldStepNumber = nextStepIndex;
