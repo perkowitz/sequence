@@ -36,6 +36,7 @@ public interface SequencerDisplay {
     public void displayModes(Map<SequencerInterface.Mode,Boolean> modeIsActiveMap);
     public void displayModeChoice(SequencerInterface.Mode mode, SequencerInterface.Mode[] modeChoices);
 
-    public void displayValue(int value);
+    public void clearValue();
+    public void displayValue(int value, int minValue, int maxValue, SequencerInterface.ValueMode valueMode);
 
 }
