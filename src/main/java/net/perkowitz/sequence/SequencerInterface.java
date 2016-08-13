@@ -48,7 +48,7 @@ public interface SequencerInterface {
     public void selectValue(int index);
     public void selectMode(Mode mode);
 
-
+    public void trigger(boolean isReset);
 
 
 

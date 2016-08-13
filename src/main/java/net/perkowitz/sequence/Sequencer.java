@@ -2,6 +2,7 @@ package net.perkowitz.sequence;
 
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import com.google.common.io.Files;
 import net.perkowitz.sequence.models.Memory;
 import net.perkowitz.sequence.models.Pattern;
 import net.perkowitz.sequence.models.Step;
@@ -55,6 +56,9 @@ public class Sequencer implements SequencerInterface  {
     private StepMode stepMode = StepMode.MUTE;
     private boolean patternEditMode = false;
     private ValueMode valueMode = VELOCITY;
+    private int currentFileIndex = 0;
+
+    private boolean triggerEnabled = true;
 
     private static CountDownLatch stop = new CountDownLatch(1);
     private Timer timer = null;
@@ -78,7 +82,7 @@ public class Sequencer implements SequencerInterface  {
         this.sequenceOutput.open();
         this.sequenceReceiver = this.sequenceOutput.getReceiver();
 
-        load(FILENAME_PREFIX + "0" + FILENAME_SUFFIX);
+        load(FILENAME_PREFIX + currentFileIndex + FILENAME_SUFFIX);
 
         for (Mode mode : Mode.values()) {
             modeIsActiveMap.put(mode, false);
@@ -113,7 +117,7 @@ public class Sequencer implements SequencerInterface  {
         }
 
         display.selectModule(module);
-        display.displayModule(module, memory, modeIsActiveMap);
+        display.displayModule(module, memory, modeIsActiveMap, currentFileIndex);
 
     }
 
@@ -123,10 +127,14 @@ public class Sequencer implements SequencerInterface  {
 
     public void loadData(int index) {
         load(FILENAME_PREFIX + index + FILENAME_SUFFIX);
+        currentFileIndex = index;
+        display.displayFiles(currentFileIndex);
     }
 
     public void saveData(int index) {
         save(FILENAME_PREFIX + index + FILENAME_SUFFIX);
+        currentFileIndex = index;
+        display.displayFiles(currentFileIndex);
     }
 
     public void setSync(SyncMode syncMode) {
@@ -135,7 +143,7 @@ public class Sequencer implements SequencerInterface  {
 
     public void selectPatterns(int minIndex, int maxIndex) {
 
-        System.out.printf("selectPatterns: %d - %d\n", minIndex, maxIndex);
+//        System.out.printf("selectPatterns: %d - %d\n", minIndex, maxIndex);
 
         if (patternEditMode) {
             Pattern selected = memory.selectedPattern();
@@ -175,7 +183,7 @@ public class Sequencer implements SequencerInterface  {
     public void selectTrack(int index) {
 
         Track track = memory.selectedPattern().getTrack(index);
-        System.out.printf("selectTrack: %d, %s\n", index, track);
+//        System.out.printf("selectTrack: %d, %s\n", index, track);
         if (trackSelectMode) {
             // unselect the currently selected track
             Track currentTrack = memory.selectedTrack();
@@ -194,7 +202,7 @@ public class Sequencer implements SequencerInterface  {
 
     public void selectStep(int index) {
 
-        System.out.printf("selectStep: %d, %s\n", index, stepMode);
+//        System.out.printf("selectStep: %d, %s\n", index, stepMode);
         Step step = memory.selectedTrack().getStep(index);
         if (stepMode == StepMode.MUTE) {
             // in mute mode, both mute/unmute and select that step
@@ -215,19 +223,19 @@ public class Sequencer implements SequencerInterface  {
     }
 
     public void selectValue(int index) {
-        System.out.printf("selectValue: %d\n", index);
+//        System.out.printf("selectValue: %d\n", index);
         if (valueMode == VELOCITY) {
             Step step = memory.selectedStep();
             if (step != null) {
                 int velocity = ((index + 1) * 16) - 1;
-                System.out.printf("- for step %s, v=%d, set v=%d\n", step, step.getVelocity(), velocity);
+//                System.out.printf("- for step %s, v=%d, set v=%d\n", step, step.getVelocity(), velocity);
                 step.setVelocity(velocity);
                 display.displayValue(velocity, VELOCITY_MIN, VELOCITY_MAX, ValueMode.VELOCITY);
             }
         } else if (valueMode == TEMPO) {
             tempo = index * (TEMPO_MAX - TEMPO_MIN) / 8 + TEMPO_MIN;
             tempoIntervalInMillis = 125 * 120 / tempo;
-            System.out.printf("Tempo: %d, %d\n", tempo, tempoIntervalInMillis);
+//            System.out.printf("Tempo: %d, %d\n", tempo, tempoIntervalInMillis);
             display.displayValue(tempo, TEMPO_MIN, TEMPO_MAX, ValueMode.TEMPO);
             startTimer();
         }
@@ -235,7 +243,7 @@ public class Sequencer implements SequencerInterface  {
 
     public void selectMode(Mode mode) {
 
-        System.out.printf("selectMode: %s\n", mode);
+//        System.out.printf("selectMode: %s\n", mode);
         switch (mode) {
 
             case PATTERN_PLAY:
@@ -309,7 +317,7 @@ public class Sequencer implements SequencerInterface  {
                 break;
 
             case SAVE:
-                save(FILENAME_PREFIX + "0" + FILENAME_SUFFIX);
+                save(FILENAME_PREFIX + currentFileIndex + FILENAME_SUFFIX);
                 break;
 
             case HELP:
@@ -318,6 +326,12 @@ public class Sequencer implements SequencerInterface  {
 
             //         LOAD, COPY, CLEAR, PATTERN_PLAY, PATTERN_EDIT,
 
+        }
+    }
+
+    public void trigger(boolean isReset) {
+        if (triggerEnabled) {
+            advance(isReset);
         }
     }
 
@@ -376,7 +390,7 @@ public class Sequencer implements SequencerInterface  {
 
     private void nextPattern(Pattern nextPattern) {
         Pattern playingPattern = memory.playingPattern();
-        System.out.printf("nextPattern: playing=%s, chained=%s\n", playingPattern, nextPattern);
+//        System.out.printf("nextPattern: playing=%s, chained=%s\n", playingPattern, nextPattern);
         if (nextPattern != playingPattern) {
             int selectedTrackIndex = memory.selectedTrack().getIndex();
             memory.select(nextPattern);
@@ -451,7 +465,14 @@ public class Sequencer implements SequencerInterface  {
     private void save(String filename) {
 
         try {
-            objectMapper.writeValue(new File(filename), memory);
+
+            File file = new File(filename);
+            if (file.exists()) {
+                // make a backup, but will overwrite any previous backups
+                Files.copy(file, new File(filename + ".backup"));
+            }
+
+            objectMapper.writeValue(file, memory);
 //            String json = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(memory);
 //            System.out.println(json);
 
@@ -467,7 +488,7 @@ public class Sequencer implements SequencerInterface  {
             File file = new File(filename);
 
             if (file.exists()) {
-                memory = objectMapper.readValue(new File(filename), Memory.class);
+                memory = objectMapper.readValue(file, Memory.class);
             } else {
                 memory = new Memory();
                 memory.select(memory.selectedPattern().getTrack(8));

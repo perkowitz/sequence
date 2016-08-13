@@ -12,6 +12,9 @@ import static javax.sound.midi.ShortMessage.*;
 public class SequencerReceiver implements Receiver {
 
     private SequencerInterface sequencer;
+    private int triggerChannel = 15;
+    private int stepNote = 36;
+    private int resetNote = 37;
 
     public SequencerReceiver(SequencerInterface sequencer) {
         this.sequencer = sequencer;
@@ -27,11 +30,15 @@ public class SequencerReceiver implements Receiver {
             int command = shortMessage.getCommand();
             switch (command) {
                 case NOTE_ON:
-                    System.out.printf("NOTE_ON %d, %d\n", shortMessage.getData1(), shortMessage.getData2());
-
+//                    System.out.printf("NOTE_ON %d, %d, %d\n", shortMessage.getChannel(), shortMessage.getData1(), shortMessage.getData2());
+                    if (shortMessage.getChannel() == triggerChannel && shortMessage.getData1() == stepNote) {
+                        sequencer.trigger(false);
+                    } else if (shortMessage.getChannel() == triggerChannel && shortMessage.getData1() == resetNote) {
+                        sequencer.trigger(true);
+                    }
                     break;
                 case NOTE_OFF:
-                    System.out.printf("NOTE_OFF\n");
+//                    System.out.printf("NOTE_OFF\n");
                     break;
                 case START:
                     System.out.printf("START\n");

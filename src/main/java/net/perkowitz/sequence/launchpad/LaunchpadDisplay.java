@@ -97,7 +97,7 @@ public class LaunchpadDisplay implements SequencerDisplay {
 
     }
 
-    public void displayModule(SequencerInterface.Module module, Memory memory, Map<SequencerInterface.Mode,Boolean> modeIsActiveMap) {
+    public void displayModule(SequencerInterface.Module module, Memory memory, Map<SequencerInterface.Mode,Boolean> modeIsActiveMap, int currentFileIndex) {
 
         switch (module) {
             case SEQUENCE:
@@ -106,8 +106,10 @@ public class LaunchpadDisplay implements SequencerDisplay {
                 break;
             case SETTINGS:
                 launchpadClient.reset();
-                displaySessions();
-                displayFiles();
+                for (Session session : memory.getSessions()) {
+                    displaySession(session);
+                }
+                displayFiles(currentFileIndex);
                 if (modeIsActiveMap != null) {
                     displayModes(modeIsActiveMap);
                 }
@@ -116,26 +118,32 @@ public class LaunchpadDisplay implements SequencerDisplay {
 
     }
 
-    public void displaySessions() {
+    public void displaySession(Session session) {
 
-        // sessions buttons are orange
-        Color color = LaunchpadUtil.COLOR_SELECTED;
-        for (int y = LaunchpadUtil.SESSIONS_MIN_ROW; y <= LaunchpadUtil.SESSIONS_MAX_ROW; y++) {
-            for (int x = 0; x < 8; x++) {
-                launchpadClient.setPadLight(Pad.at(x, y), color, BackBufferOperation.NONE);
-            }
+        if (currentModule != SequencerInterface.Module.SETTINGS) { return; }
+
+        int x = getX(session.getIndex());
+        int y = LaunchpadUtil.PATTERNS_MIN_ROW + getY(session.getIndex());
+
+        Color color = LaunchpadUtil.COLOR_SELECTED_DIM;
+        if (session.isSelected()) {
+            color = LaunchpadUtil.COLOR_SELECTED;
         }
+        launchpadClient.setPadLight(Pad.at(x, y), color, BackBufferOperation.NONE);
 
     }
 
-    public void displayFiles() {
+    public void displayFiles(int currentFileIndex) {
 
         // load buttons are green; save buttons are red
-        Color loadColor = LaunchpadUtil.COLOR_PLAYING;
-        Color saveColor = LaunchpadUtil.COLOR_ENABLED;
         for (int x = 0; x < 8; x++) {
-            launchpadClient.setPadLight(Pad.at(x, LOAD_ROW), loadColor, BackBufferOperation.NONE);
-            launchpadClient.setPadLight(Pad.at(x, SAVE_ROW), saveColor, BackBufferOperation.NONE);
+            if (x == currentFileIndex) {
+                launchpadClient.setPadLight(Pad.at(x, LOAD_ROW), LaunchpadUtil.COLOR_PLAYING, BackBufferOperation.NONE);
+                launchpadClient.setPadLight(Pad.at(x, SAVE_ROW), LaunchpadUtil.COLOR_ENABLED, BackBufferOperation.NONE);
+            } else {
+                launchpadClient.setPadLight(Pad.at(x, LOAD_ROW), LaunchpadUtil.COLOR_PLAYING_DIM, BackBufferOperation.NONE);
+                launchpadClient.setPadLight(Pad.at(x, SAVE_ROW), LaunchpadUtil.COLOR_DISABLED, BackBufferOperation.NONE);
+            }
         }
 
     }
