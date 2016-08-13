@@ -23,6 +23,11 @@ public interface SequencerDisplay {
     public void displayAll(Memory memory, Map<SequencerInterface.Mode,Boolean> modeIsActiveMap);
     public void displayHelp();
 
+    public void displayModule(SequencerInterface.Module module, Memory memory, Map<SequencerInterface.Mode,Boolean> modeIsActiveMap);
+
+    public void displaySessions();
+    public void displayFiles();
+
     public void displayPattern(Pattern pattern);
 
     public void displayTrack(Track track, boolean displaySteps);
@@ -38,5 +43,7 @@ public interface SequencerDisplay {
 
     public void clearValue();
     public void displayValue(int value, int minValue, int maxValue, SequencerInterface.ValueMode valueMode);
+
+    public void selectModule(SequencerInterface.Module module);
 
 }

@@ -81,7 +81,7 @@ public class RunSequencer {
             LaunchpadController launchpadController = new LaunchpadController();
             launchpad.setListener(launchpadController);
 
-            Sequencer sequencer = new Sequencer(launchpadController, launchpadDisplay, sequenceOutput);
+            Sequencer sequencer = new Sequencer(launchpadController, launchpadDisplay, midiInput, sequenceOutput);
 
         } catch (MidiUnavailableException e) {
             System.err.printf("%s\n", e.getStackTrace().toString());

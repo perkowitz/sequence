@@ -6,8 +6,10 @@ import net.perkowitz.sequence.SequencerInterface;
 import net.perkowitz.sequence.models.*;
 import net.thecodersbreakfast.lp4j.api.*;
 
+import java.util.Arrays;
 import java.util.Map;
 
+import static net.perkowitz.sequence.SequencerInterface.SETTINGS_MODULE_MODES;
 import static net.perkowitz.sequence.launchpad.LaunchpadUtil.*;
 
 /**
@@ -16,6 +18,8 @@ import static net.perkowitz.sequence.launchpad.LaunchpadUtil.*;
 public class LaunchpadDisplay implements SequencerDisplay {
 
     private LaunchpadClient launchpadClient;
+    private SequencerInterface.Module currentModule = SequencerInterface.Module.SEQUENCE;
+
 
     public LaunchpadDisplay(LaunchpadClient launchpadClient) {
         this.launchpadClient = launchpadClient;
@@ -93,7 +97,52 @@ public class LaunchpadDisplay implements SequencerDisplay {
 
     }
 
+    public void displayModule(SequencerInterface.Module module, Memory memory, Map<SequencerInterface.Mode,Boolean> modeIsActiveMap) {
+
+        switch (module) {
+            case SEQUENCE:
+                launchpadClient.reset();
+                displayAll(memory, modeIsActiveMap);
+                break;
+            case SETTINGS:
+                launchpadClient.reset();
+                displaySessions();
+                displayFiles();
+                if (modeIsActiveMap != null) {
+                    displayModes(modeIsActiveMap);
+                }
+                break;
+        }
+
+    }
+
+    public void displaySessions() {
+
+        // sessions buttons are orange
+        Color color = LaunchpadUtil.COLOR_SELECTED;
+        for (int y = LaunchpadUtil.SESSIONS_MIN_ROW; y <= LaunchpadUtil.SESSIONS_MAX_ROW; y++) {
+            for (int x = 0; x < 8; x++) {
+                launchpadClient.setPadLight(Pad.at(x, y), color, BackBufferOperation.NONE);
+            }
+        }
+
+    }
+
+    public void displayFiles() {
+
+        // load buttons are green; save buttons are red
+        Color loadColor = LaunchpadUtil.COLOR_PLAYING;
+        Color saveColor = LaunchpadUtil.COLOR_ENABLED;
+        for (int x = 0; x < 8; x++) {
+            launchpadClient.setPadLight(Pad.at(x, LOAD_ROW), loadColor, BackBufferOperation.NONE);
+            launchpadClient.setPadLight(Pad.at(x, SAVE_ROW), saveColor, BackBufferOperation.NONE);
+        }
+
+    }
+
     public void displayPattern(Pattern pattern) {
+
+        if (currentModule != SequencerInterface.Module.SEQUENCE) { return; }
 
         int x = getX(pattern.getIndex());
         int y = LaunchpadUtil.PATTERNS_MIN_ROW + getY(pattern.getIndex());
@@ -128,6 +177,8 @@ public class LaunchpadDisplay implements SequencerDisplay {
 
     public void displayTrack(Track track, boolean displaySteps) {
 
+        if (currentModule != SequencerInterface.Module.SEQUENCE) { return; }
+
         int x = getX(track.getIndex());
         int y = LaunchpadUtil.TRACKS_MIN_ROW + getY(track.getIndex());
 //        System.out.printf("displayTrack: %s, x=%d, y=%d\n", track, x, y);
@@ -158,6 +209,9 @@ public class LaunchpadDisplay implements SequencerDisplay {
     }
 
     public void displayStep(Step step) {
+
+        if (currentModule != SequencerInterface.Module.SEQUENCE) { return; }
+
         int x = getX(step.getIndex());
         int y = STEPS_MIN_ROW + getY(step.getIndex());
 //        System.out.printf("displayStep: %s, x=%d, y=%d\n", step, x, y);
@@ -172,6 +226,9 @@ public class LaunchpadDisplay implements SequencerDisplay {
     }
 
     public void clearSteps() {
+
+        if (currentModule != SequencerInterface.Module.SEQUENCE) { return; }
+
         for (int index = 0; index < Track.getStepCount(); index++) {
 //            Step step = new Step(index);
 //            displayStep(step);
@@ -182,12 +239,19 @@ public class LaunchpadDisplay implements SequencerDisplay {
     }
 
     public void displayPlayingStep(int stepNumber) {
+
+        if (currentModule != SequencerInterface.Module.SEQUENCE) { return; }
+
         int x = getX(stepNumber);
         int y = STEPS_MIN_ROW + getY(stepNumber);
         launchpadClient.setPadLight(Pad.at(x, y), COLOR_PLAYING, BackBufferOperation.NONE);
     }
 
     public void displayMode(SequencerInterface.Mode mode, boolean isActive) {
+
+        if (currentModule == SequencerInterface.Module.SETTINGS && !Arrays.asList(SETTINGS_MODULE_MODES).contains(mode)) {
+            return;
+        }
 
         Color color = Color.of(2,1);
         if (isActive) {
@@ -242,6 +306,11 @@ public class LaunchpadDisplay implements SequencerDisplay {
         }
 
     }
+
+    public void selectModule(SequencerInterface.Module module) {
+        currentModule = module;
+    }
+
 
 
     /***** private implementation ***************************************************************/

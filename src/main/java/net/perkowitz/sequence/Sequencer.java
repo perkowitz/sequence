@@ -8,10 +8,7 @@ import net.perkowitz.sequence.models.Step;
 import net.perkowitz.sequence.models.Track;
 import org.codehaus.jackson.map.ObjectMapper;
 
-import javax.sound.midi.InvalidMidiDataException;
-import javax.sound.midi.MidiDevice;
-import javax.sound.midi.Receiver;
-import javax.sound.midi.ShortMessage;
+import javax.sound.midi.*;
 import java.io.File;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
@@ -22,7 +19,7 @@ import static net.perkowitz.sequence.SequencerInterface.ValueMode.VELOCITY;
 /**
  * Created by optic on 7/8/16.
  */
-public class Sequencer implements SequencerInterface {
+public class Sequencer implements SequencerInterface  {
 
     public enum StepMode { MUTE, VELOCITY, JUMP, PLAY }
     private static final int DEFAULT_TIMER = 125;
@@ -30,11 +27,16 @@ public class Sequencer implements SequencerInterface {
     private static final int VELOCITY_MAX = 128;
     private static final int TEMPO_MIN = 100;
     private static final int TEMPO_MAX = 132;
+    private static final String FILENAME_PREFIX = "sequencer-";
+    private static final String FILENAME_SUFFIX = ".json";
+
 
     ObjectMapper objectMapper = new ObjectMapper();
 
     private SequencerController controller;
     private SequencerDisplay display;
+    private MidiDevice midiInput;
+    private Transmitter inputTransmitter;
     private MidiDevice sequenceOutput;
     private Receiver sequenceReceiver;
 
@@ -60,26 +62,28 @@ public class Sequencer implements SequencerInterface {
 
     /***** constructor *********************************************************************/
 
-    public Sequencer(SequencerController controller, SequencerDisplay display, MidiDevice sequenceOutput) throws Exception {
+    public Sequencer(SequencerController controller, SequencerDisplay display, MidiDevice midiInput, MidiDevice sequenceOutput) throws Exception {
 
         this.controller = controller;
         this.controller.setSequencer(this);
         this.display = display;
 
+        this.midiInput = midiInput;
+        this.midiInput.open();
+        this.inputTransmitter = this.midiInput.getTransmitter();
+        SequencerReceiver sequencerReceiver = new SequencerReceiver(this);
+        this.inputTransmitter.setReceiver(sequencerReceiver);
+
         this.sequenceOutput = sequenceOutput;
         this.sequenceOutput.open();
-        this.sequenceReceiver = sequenceOutput.getReceiver();
+        this.sequenceReceiver = this.sequenceOutput.getReceiver();
 
-        load();
-        if (memory == null) {
-            memory = new Memory();
-            memory.select(memory.selectedPattern().getTrack(8));
-        }
+        load(FILENAME_PREFIX + "0" + FILENAME_SUFFIX);
 
         for (Mode mode : Mode.values()) {
             modeIsActiveMap.put(mode, false);
         }
-        Mode[] activeModes = new Mode[] { Mode.PATTERN_PLAY, Mode.TRACK_EDIT, Mode.STEP_MUTE };
+        Mode[] activeModes = new Mode[] { Mode.PATTERN_PLAY, Mode.TRACK_EDIT, Mode.STEP_MUTE, Mode.SEQUENCE };
         for (Mode mode : activeModes) {
             modeIsActiveMap.put(mode, true);
         }
@@ -98,7 +102,34 @@ public class Sequencer implements SequencerInterface {
 
     /***** public interface *********************************************************************/
 
+    public void selectModule(Module module) {
+
+        if (module == Module.SEQUENCE) {
+            modeIsActiveMap.put(Mode.SEQUENCE, true);
+            modeIsActiveMap.put(Mode.SETTINGS, false);
+        } else if (module == Module.SETTINGS) {
+            modeIsActiveMap.put(Mode.SEQUENCE, false);
+            modeIsActiveMap.put(Mode.SETTINGS, true);
+        }
+
+        display.selectModule(module);
+        display.displayModule(module, memory, modeIsActiveMap);
+
+    }
+
     public void selectSession(int index) {
+
+    }
+
+    public void loadData(int index) {
+        load(FILENAME_PREFIX + index + FILENAME_SUFFIX);
+    }
+
+    public void saveData(int index) {
+        save(FILENAME_PREFIX + index + FILENAME_SUFFIX);
+    }
+
+    public void setSync(SyncMode syncMode) {
 
     }
 
@@ -278,7 +309,7 @@ public class Sequencer implements SequencerInterface {
                 break;
 
             case SAVE:
-                save();
+                save(FILENAME_PREFIX + "0" + FILENAME_SUFFIX);
                 break;
 
             case HELP:
@@ -417,10 +448,10 @@ public class Sequencer implements SequencerInterface {
 
     }
 
-    private void save() {
+    private void save(String filename) {
 
         try {
-            objectMapper.writeValue(new File("sequencer.json"), memory);
+            objectMapper.writeValue(new File(filename), memory);
 //            String json = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(memory);
 //            System.out.println(json);
 
@@ -430,10 +461,17 @@ public class Sequencer implements SequencerInterface {
 
     }
 
-    private void load() {
+    private void load(String filename) {
 
         try {
-            memory = objectMapper.readValue(new File("sequencer.json"), Memory.class);
+            File file = new File(filename);
+
+            if (file.exists()) {
+                memory = objectMapper.readValue(new File(filename), Memory.class);
+            } else {
+                memory = new Memory();
+                memory.select(memory.selectedPattern().getTrack(8));
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }

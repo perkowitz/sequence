@@ -13,8 +13,13 @@ import java.util.Map;
  */
 public class LaunchpadUtil {
 
-//    public static int SESSIONS_MIN_ROW = 0;
-//    public static int SESSIONS_MAX_ROW = 0;
+    // settings module
+    public static int SESSIONS_MIN_ROW = 0;
+    public static int SESSIONS_MAX_ROW = 1;
+    public static int LOAD_ROW = 2;
+    public static int SAVE_ROW = 3;
+
+    // sequence module
     public static int PATTERNS_MIN_ROW = 0;
     public static int PATTERNS_MAX_ROW = 1;
     public static int FILLS_MIN_ROW = 2;
@@ -41,8 +46,8 @@ public class LaunchpadUtil {
         modeButtonMap.put(SequencerInterface.Mode.EXIT, Button.MIXER);
         modeButtonMap.put(SequencerInterface.Mode.SAVE, Button.SESSION);
         modeButtonMap.put(SequencerInterface.Mode.TEMPO, Button.LEFT);
-//        modeButtonMap.put(SequencerInterface.Mode.LOAD, Button.USER_1);
-//        modeButtonMap.put(SequencerInterface.Mode.HELP, Button.USER_2);
+        modeButtonMap.put(SequencerInterface.Mode.SEQUENCE, Button.USER_1);
+        modeButtonMap.put(SequencerInterface.Mode.SETTINGS, Button.USER_2);
 //        modeButtonMap.put(SequencerInterface.Mode.COPY, Button.UP);
 //        modeButtonMap.put(SequencerInterface.Mode.CLEAR, Button.DOWN);
         modeButtonMap.put(SequencerInterface.Mode.PATTERN_EDIT, Button.UP);
