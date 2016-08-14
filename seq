@@ -1,0 +1,3 @@
+#!/bin/sh
+
+java -cp target/sequence-1.0-shaded.jar net.perkowitz.sequence.RunSequencer
