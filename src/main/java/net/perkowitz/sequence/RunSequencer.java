@@ -12,9 +12,7 @@ import net.thecodersbreakfast.lp4j.midi.MidiLaunchpad;
 
 import javax.sound.midi.MidiDevice;
 import javax.sound.midi.MidiUnavailableException;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.util.List;
 import java.util.Properties;
 
@@ -30,9 +28,19 @@ public class RunSequencer {
 
     public static void main(String args[]) throws Exception {
 
+        String propertyFile = null;
+        if (args.length > 0) {
+            propertyFile = args[0];
+        }
+
         // load settings
-        System.out.println("Getting app settings..");
-        properties = getProperties("sequence.properties");
+        if (propertyFile == null) {
+            System.out.println("Getting app settings..");
+            properties = getProperties("sequence.properties");
+        } else {
+            System.out.printf("Getting app settings from %s..\n", propertyFile);
+            properties = getProperties(propertyFile);
+        }
 
         // set all the counts of sessions, patterns, tracks, steps
         System.out.println("Setting memory sizes..");
@@ -96,12 +104,17 @@ public class RunSequencer {
         try {
             Properties properties = new Properties();
 
-            inputStream = RunSequencer.class.getClassLoader().getResourceAsStream(filename);
+            File file = new File(filename);
+            if (file.exists()) {
+                inputStream = new FileInputStream(file);
+            } else {
+                inputStream = RunSequencer.class.getClassLoader().getResourceAsStream(filename);
+            }
 
             if (inputStream != null) {
                 properties.load(inputStream);
             } else {
-                throw new FileNotFoundException("property file '" + filename + "' not found in the classpath");
+                throw new FileNotFoundException("property file '" + filename + "' not found in the classpath or path");
             }
 
             return properties;
