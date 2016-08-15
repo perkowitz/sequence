@@ -2,16 +2,14 @@ package net.perkowitz.sequence;
 
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import com.google.common.io.Files;
 import net.perkowitz.sequence.models.Memory;
 import net.perkowitz.sequence.models.Pattern;
 import net.perkowitz.sequence.models.Step;
 import net.perkowitz.sequence.models.Track;
 import org.codehaus.jackson.map.ObjectMapper;
 
-import javax.sound.midi.InvalidMidiDataException;
-import javax.sound.midi.MidiDevice;
-import javax.sound.midi.Receiver;
-import javax.sound.midi.ShortMessage;
+import javax.sound.midi.*;
 import java.io.File;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
@@ -22,7 +20,7 @@ import static net.perkowitz.sequence.SequencerInterface.ValueMode.VELOCITY;
 /**
  * Created by optic on 7/8/16.
  */
-public class Sequencer implements SequencerInterface {
+public class Sequencer implements SequencerInterface  {
 
     public enum StepMode { MUTE, VELOCITY, JUMP, PLAY }
     private static final int DEFAULT_TIMER = 125;
@@ -30,11 +28,16 @@ public class Sequencer implements SequencerInterface {
     private static final int VELOCITY_MAX = 128;
     private static final int TEMPO_MIN = 100;
     private static final int TEMPO_MAX = 132;
+    private static final String FILENAME_PREFIX = "sequencer-";
+    private static final String FILENAME_SUFFIX = ".json";
+
 
     ObjectMapper objectMapper = new ObjectMapper();
 
     private SequencerController controller;
     private SequencerDisplay display;
+    private MidiDevice midiInput;
+    private Transmitter inputTransmitter;
     private MidiDevice sequenceOutput;
     private Receiver sequenceReceiver;
 
@@ -53,6 +56,9 @@ public class Sequencer implements SequencerInterface {
     private StepMode stepMode = StepMode.MUTE;
     private boolean patternEditMode = false;
     private ValueMode valueMode = VELOCITY;
+    private int currentFileIndex = 0;
+
+    private boolean triggerEnabled = true;
 
     private static CountDownLatch stop = new CountDownLatch(1);
     private Timer timer = null;
@@ -60,26 +66,28 @@ public class Sequencer implements SequencerInterface {
 
     /***** constructor *********************************************************************/
 
-    public Sequencer(SequencerController controller, SequencerDisplay display, MidiDevice sequenceOutput) throws Exception {
+    public Sequencer(SequencerController controller, SequencerDisplay display, MidiDevice midiInput, MidiDevice sequenceOutput) throws Exception {
 
         this.controller = controller;
         this.controller.setSequencer(this);
         this.display = display;
 
+        this.midiInput = midiInput;
+        this.midiInput.open();
+        this.inputTransmitter = this.midiInput.getTransmitter();
+        SequencerReceiver sequencerReceiver = new SequencerReceiver(this);
+        this.inputTransmitter.setReceiver(sequencerReceiver);
+
         this.sequenceOutput = sequenceOutput;
         this.sequenceOutput.open();
-        this.sequenceReceiver = sequenceOutput.getReceiver();
+        this.sequenceReceiver = this.sequenceOutput.getReceiver();
 
-        load();
-        if (memory == null) {
-            memory = new Memory();
-            memory.select(memory.selectedPattern().getTrack(8));
-        }
+        load(FILENAME_PREFIX + currentFileIndex + FILENAME_SUFFIX);
 
         for (Mode mode : Mode.values()) {
             modeIsActiveMap.put(mode, false);
         }
-        Mode[] activeModes = new Mode[] { Mode.PATTERN_PLAY, Mode.TRACK_EDIT, Mode.STEP_MUTE };
+        Mode[] activeModes = new Mode[] { Mode.PATTERN_PLAY, Mode.TRACK_EDIT, Mode.STEP_MUTE, Mode.SEQUENCE };
         for (Mode mode : activeModes) {
             modeIsActiveMap.put(mode, true);
         }
@@ -98,13 +106,44 @@ public class Sequencer implements SequencerInterface {
 
     /***** public interface *********************************************************************/
 
+    public void selectModule(Module module) {
+
+        if (module == Module.SEQUENCE) {
+            modeIsActiveMap.put(Mode.SEQUENCE, true);
+            modeIsActiveMap.put(Mode.SETTINGS, false);
+        } else if (module == Module.SETTINGS) {
+            modeIsActiveMap.put(Mode.SEQUENCE, false);
+            modeIsActiveMap.put(Mode.SETTINGS, true);
+        }
+
+        display.selectModule(module);
+        display.displayModule(module, memory, modeIsActiveMap, currentFileIndex);
+
+    }
+
     public void selectSession(int index) {
+
+    }
+
+    public void loadData(int index) {
+        load(FILENAME_PREFIX + index + FILENAME_SUFFIX);
+        currentFileIndex = index;
+        display.displayFiles(currentFileIndex);
+    }
+
+    public void saveData(int index) {
+        save(FILENAME_PREFIX + index + FILENAME_SUFFIX);
+        currentFileIndex = index;
+        display.displayFiles(currentFileIndex);
+    }
+
+    public void setSync(SyncMode syncMode) {
 
     }
 
     public void selectPatterns(int minIndex, int maxIndex) {
 
-        System.out.printf("selectPatterns: %d - %d\n", minIndex, maxIndex);
+//        System.out.printf("selectPatterns: %d - %d\n", minIndex, maxIndex);
 
         if (patternEditMode) {
             Pattern selected = memory.selectedPattern();
@@ -144,7 +183,7 @@ public class Sequencer implements SequencerInterface {
     public void selectTrack(int index) {
 
         Track track = memory.selectedPattern().getTrack(index);
-        System.out.printf("selectTrack: %d, %s\n", index, track);
+//        System.out.printf("selectTrack: %d, %s\n", index, track);
         if (trackSelectMode) {
             // unselect the currently selected track
             Track currentTrack = memory.selectedTrack();
@@ -163,7 +202,7 @@ public class Sequencer implements SequencerInterface {
 
     public void selectStep(int index) {
 
-        System.out.printf("selectStep: %d, %s\n", index, stepMode);
+//        System.out.printf("selectStep: %d, %s\n", index, stepMode);
         Step step = memory.selectedTrack().getStep(index);
         if (stepMode == StepMode.MUTE) {
             // in mute mode, both mute/unmute and select that step
@@ -184,19 +223,19 @@ public class Sequencer implements SequencerInterface {
     }
 
     public void selectValue(int index) {
-        System.out.printf("selectValue: %d\n", index);
+//        System.out.printf("selectValue: %d\n", index);
         if (valueMode == VELOCITY) {
             Step step = memory.selectedStep();
             if (step != null) {
                 int velocity = ((index + 1) * 16) - 1;
-                System.out.printf("- for step %s, v=%d, set v=%d\n", step, step.getVelocity(), velocity);
+//                System.out.printf("- for step %s, v=%d, set v=%d\n", step, step.getVelocity(), velocity);
                 step.setVelocity(velocity);
                 display.displayValue(velocity, VELOCITY_MIN, VELOCITY_MAX, ValueMode.VELOCITY);
             }
         } else if (valueMode == TEMPO) {
             tempo = index * (TEMPO_MAX - TEMPO_MIN) / 8 + TEMPO_MIN;
             tempoIntervalInMillis = 125 * 120 / tempo;
-            System.out.printf("Tempo: %d, %d\n", tempo, tempoIntervalInMillis);
+//            System.out.printf("Tempo: %d, %d\n", tempo, tempoIntervalInMillis);
             display.displayValue(tempo, TEMPO_MIN, TEMPO_MAX, ValueMode.TEMPO);
             startTimer();
         }
@@ -204,7 +243,7 @@ public class Sequencer implements SequencerInterface {
 
     public void selectMode(Mode mode) {
 
-        System.out.printf("selectMode: %s\n", mode);
+//        System.out.printf("selectMode: %s\n", mode);
         switch (mode) {
 
             case PATTERN_PLAY:
@@ -278,7 +317,7 @@ public class Sequencer implements SequencerInterface {
                 break;
 
             case SAVE:
-                save();
+                save(FILENAME_PREFIX + currentFileIndex + FILENAME_SUFFIX);
                 break;
 
             case HELP:
@@ -287,6 +326,12 @@ public class Sequencer implements SequencerInterface {
 
             //         LOAD, COPY, CLEAR, PATTERN_PLAY, PATTERN_EDIT,
 
+        }
+    }
+
+    public void trigger(boolean isReset) {
+        if (triggerEnabled) {
+            advance(isReset);
         }
     }
 
@@ -345,7 +390,7 @@ public class Sequencer implements SequencerInterface {
 
     private void nextPattern(Pattern nextPattern) {
         Pattern playingPattern = memory.playingPattern();
-        System.out.printf("nextPattern: playing=%s, chained=%s\n", playingPattern, nextPattern);
+//        System.out.printf("nextPattern: playing=%s, chained=%s\n", playingPattern, nextPattern);
         if (nextPattern != playingPattern) {
             int selectedTrackIndex = memory.selectedTrack().getIndex();
             memory.select(nextPattern);
@@ -417,10 +462,17 @@ public class Sequencer implements SequencerInterface {
 
     }
 
-    private void save() {
+    private void save(String filename) {
 
         try {
-            objectMapper.writeValue(new File("sequencer.json"), memory);
+
+            File file = new File(filename);
+            if (file.exists()) {
+                // make a backup, but will overwrite any previous backups
+                Files.copy(file, new File(filename + ".backup"));
+            }
+
+            objectMapper.writeValue(file, memory);
 //            String json = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(memory);
 //            System.out.println(json);
 
@@ -430,10 +482,17 @@ public class Sequencer implements SequencerInterface {
 
     }
 
-    private void load() {
+    private void load(String filename) {
 
         try {
-            memory = objectMapper.readValue(new File("sequencer.json"), Memory.class);
+            File file = new File(filename);
+
+            if (file.exists()) {
+                memory = objectMapper.readValue(file, Memory.class);
+            } else {
+                memory = new Memory();
+                memory.select(memory.selectedPattern().getTrack(8));
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }

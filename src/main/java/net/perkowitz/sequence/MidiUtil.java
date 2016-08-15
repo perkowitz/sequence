@@ -3,6 +3,7 @@ package net.perkowitz.sequence;
 import javax.sound.midi.MidiDevice;
 import javax.sound.midi.MidiSystem;
 import javax.sound.midi.MidiUnavailableException;
+import java.util.List;
 
 /**
  * Created by optic on 7/8/16.
@@ -11,19 +12,13 @@ public class MidiUtil {
 
     public static MidiDevice.Info[] midiDeviceInfos = null;
 
-    public static MidiDevice findMidiDevice(String deviceName, boolean receive, boolean transmit) {
+    public static MidiDevice findMidiDevice(String[] deviceNames, boolean receive, boolean transmit) {
 
         if (midiDeviceInfos == null) {
             System.out.println("Loading device info..");
             midiDeviceInfos = MidiSystem.getMidiDeviceInfo();
-//            for (int i = 0; i < midiDeviceInfos.length; i++) {
-//                System.out.printf("Found midi device: %s\n", midiDeviceInfos[i].getName());
-//            }
         }
 
-        MidiDevice targetDevice = null;
-
-        System.out.println("Checking for device name..");
         try {
             for (int i = 0; i < midiDeviceInfos.length; i++) {
                 MidiDevice device = MidiSystem.getMidiDevice(midiDeviceInfos[i]);
@@ -31,10 +26,16 @@ public class MidiUtil {
                 boolean canReceive = device.getMaxReceivers() != 0;
                 boolean canTransmit = device.getMaxTransmitters() != 0;
 
-                if (midiDeviceInfos[i].getName().toLowerCase().contains(deviceName.toLowerCase()) && receive == canReceive && transmit == canTransmit) {
-                    targetDevice = device;
-                } else if (midiDeviceInfos[i].getDescription().toLowerCase().contains(deviceName.toLowerCase()) && receive == canReceive && transmit == canTransmit) {
-                    targetDevice = device;
+                int matches = 0;
+                for (String name : deviceNames) {
+                    if (midiDeviceInfos[i].getName().toLowerCase().contains(name.toLowerCase()) ||
+                            midiDeviceInfos[i].getDescription().toLowerCase().contains(name.toLowerCase())) {
+                        matches++;
+                    }
+                }
+
+                if (matches == deviceNames.length && receive == canReceive && transmit == canTransmit) {
+                    return device;
                 }
 
             }
@@ -42,13 +43,12 @@ public class MidiUtil {
             System.out.printf("MIDI not available: %s\n", e);
         }
 
-        if (targetDevice == null) {
-            for (int i = 0; i < midiDeviceInfos.length; i++) {
-                System.out.printf("Found midi device: %s, %s\n", midiDeviceInfos[i].getName(), midiDeviceInfos[i].getDescription());
-            }
+        // if device not found, print out a list of devices
+        for (int i = 0; i < midiDeviceInfos.length; i++) {
+            System.out.printf("Found midi device: %s, %s\n", midiDeviceInfos[i].getName(), midiDeviceInfos[i].getDescription());
         }
 
-        return targetDevice;
+        return null;
     }
 
 }
