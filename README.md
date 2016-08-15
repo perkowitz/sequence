@@ -4,9 +4,7 @@ Sequence is a MIDI sequencer designed to run on a headless computer (e.g. a Rasp
 (e.g. a Novation Launchpad) for the UI. It is being developed on a Raspberry Pi and Launchpad (original, not an S, RGB, or Pro)
 but should be adaptable to other hardware.
 
-## Wiki and Manual
-
-[Home](https://github.com/perkowitz/sequence/wiki)
+[Wiki Home](https://github.com/perkowitz/sequence/wiki)
 
 [Getting Started](https://github.com/perkowitz/sequence/wiki/Getting%20Started)
 
@@ -16,12 +14,12 @@ but should be adaptable to other hardware.
 
 ### Version 0.1
 
-Features
+#### Features
 - It's a usable drum sequencer!
 - Files, sessions, patterns, tracks, steps, velocity all working properly
 - Fairly stable running from internal clock or in MIDI trigger mode
 
-Issues/missing
+#### Issues/missing
 - No MIDI clock sync
 - Limited tempo settings
 - Occasional issue where won't play on startup; select any track to continue normally
