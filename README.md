@@ -25,3 +25,5 @@ but should be adaptable to other hardware.
 - Occasional issue where won't play on startup; select any track to continue normally
 - Can't change MIDI send/trigger channels or note numbers
 - No fill patterns
+
+[List of open features & bugs](https://github.com/perkowitz/sequence/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-desc)
