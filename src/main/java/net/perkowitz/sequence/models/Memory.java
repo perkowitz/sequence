@@ -16,6 +16,7 @@ public class Memory {
 
     @Getter private int selectedSessionIndex;
     @Getter private int selectedPatternIndex;
+    @Getter private boolean selectedPatternIsFill;
     @Getter private int selectedTrackIndex;
     @Getter private int selectedStepIndex;
 
@@ -23,6 +24,7 @@ public class Memory {
     @Getter private int patternChainMin;    // the index of the first of the playing pattern chain
     @Getter private int patternChainMax;    // the index of the last of the pattern chain
     @Getter private int patternChainIndex;  // the index of the NEXT pattern to play
+    private Pattern playingFillOverride = null;
 
     @Getter @Setter private boolean specialSelected = false;
     @Getter @Setter private boolean copyMutesToNew = true;
@@ -47,7 +49,11 @@ public class Memory {
     }
 
     public Pattern selectedPattern() {
-        return selectedSession().getPattern(selectedPatternIndex);
+        if (selectedPatternIsFill) {
+            return selectedSession().getFill(selectedPatternIndex);
+        } else {
+            return selectedSession().getPattern(selectedPatternIndex);
+        }
     }
 
     public Track selectedTrack() {
@@ -59,6 +65,9 @@ public class Memory {
     }
 
     public Pattern playingPattern() {
+        if (playingFillOverride != null) {
+            return playingFillOverride;
+        }
         return selectedSession().getPattern(playingPatternIndex);
     }
 
@@ -86,7 +95,14 @@ public class Memory {
             selectedPattern.setSelected(false);
         }
         pattern.setSelected(true);
+
         selectedPatternIndex = pattern.getIndex();
+        if  (pattern instanceof FillPattern) {
+            selectedPatternIsFill = true;
+        } else {
+            selectedPatternIsFill = false;
+        }
+
         pattern.selectTrack(selectedTrackIndex);
     }
 
@@ -139,10 +155,44 @@ public class Memory {
     }
 
 
-    public Pattern advancePattern() {
+    public Pattern advancePattern(int measureNumber) {
 
+//        System.out.printf("advancePattern: measure=%d\n", measureNumber);
         Pattern playing = playingPattern();
         Pattern next = nextPattern();
+//        System.out.printf("advancePattern: next=%s\n", next);
+
+        // check to see if a fill should play -- when we've hit the fill's interval and there aren't applicable fills on a shorter interval
+        int maxInterval = -1;
+        int percentSum = 0;
+        List<FillPattern> readyFills = Lists.newArrayList();
+        for (FillPattern fill : selectedSession().getFills()) {
+            if (fill.isChained() && measureNumber % fill.getFillInterval() == 0) {
+                if (readyFills.size() == 0) {
+                    readyFills.add(fill);
+                    maxInterval = fill.getFillInterval();
+                    percentSum = fill.getFillPercent();
+                } else if (fill.getFillInterval() == maxInterval) {
+                    readyFills.add(fill);
+                    percentSum += fill.getFillPercent();
+                } else if (fill.getFillInterval() > maxInterval) {
+                    readyFills.clear();
+                    readyFills.add(fill);
+                    maxInterval = fill.getFillInterval();
+                    percentSum = fill.getFillPercent();
+                }
+            }
+        }
+//        System.out.printf("advancePattern: readyfills=%s\n", readyFills);
+        // randomly choose one of the available fills
+        if (readyFills.size() > 0 && (Math.random() * 100) <= (percentSum / readyFills.size())) {
+            int index = (int)(Math.random() * readyFills.size()); // TODO: use the FillPattern probs to choose between them instead of equally weightedune
+            next = readyFills.get(index);
+            playingFillOverride = next;
+        } else {
+            playingFillOverride = null;
+        }
+//        System.out.printf("advancePattern: next=%s\n", next);
 
         if (playing != next) {
             playing.setPlaying(false);
@@ -151,7 +201,6 @@ public class Memory {
             if (patternChainIndex > patternChainMax) {
                 patternChainIndex = patternChainMin;
             }
-            next = playingPattern();
             next.setPlaying(true);
             if (copyMutesToNew) {
                 next.copyMutes(playing);

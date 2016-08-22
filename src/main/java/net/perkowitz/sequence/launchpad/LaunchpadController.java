@@ -46,6 +46,11 @@ public class LaunchpadController extends LaunchpadListenerAdapter implements Seq
                     int index = pad.getX() + (pad.getY() - PATTERNS_MIN_ROW) * 8;
                     patternsPressed.add(index);
 
+                } else if (pad.getY() >= FILLS_MIN_ROW && pad.getY() <= FILLS_MAX_ROW) {
+                    // pressing a track pad
+                    int index = pad.getX() + (pad.getY() - FILLS_MIN_ROW) * 8;
+                    sequencer.selectFill(index);
+
                 } else if (pad.getY() >= TRACKS_MIN_ROW && pad.getY() <= TRACKS_MAX_ROW) {
                     // pressing a track pad
                     int index = pad.getX() + (pad.getY() - TRACKS_MIN_ROW) * 8;
