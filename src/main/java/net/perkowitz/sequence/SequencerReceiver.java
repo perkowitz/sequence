@@ -11,10 +11,14 @@ import static javax.sound.midi.ShortMessage.*;
  */
 public class SequencerReceiver implements Receiver {
 
+    private static int STEP_MIN = 0;
+    private static int STEP_MAX = 110;
+    private static int RESET_MIN = 11;
+    private static int RESET_MAX = 127;
+
     private SequencerInterface sequencer;
     private int triggerChannel = 15;
     private int stepNote = 36;
-    private int resetNote = 37;
 
     public SequencerReceiver(SequencerInterface sequencer) {
         this.sequencer = sequencer;
@@ -31,37 +35,32 @@ public class SequencerReceiver implements Receiver {
             switch (command) {
                 case NOTE_ON:
 //                    System.out.printf("NOTE_ON %d, %d, %d\n", shortMessage.getChannel(), shortMessage.getData1(), shortMessage.getData2());
-                    if (shortMessage.getChannel() == triggerChannel && shortMessage.getData1() == stepNote) {
+                    if (shortMessage.getChannel() == triggerChannel && shortMessage.getData1() == stepNote &&
+                            shortMessage.getData2() >= STEP_MIN && shortMessage.getData2() <= STEP_MAX) {
                         sequencer.trigger(false);
-                    } else if (shortMessage.getChannel() == triggerChannel && shortMessage.getData1() == resetNote) {
+                    } else if (shortMessage.getChannel() == triggerChannel && shortMessage.getData1() == stepNote &&
+                            shortMessage.getData2() >= RESET_MIN && shortMessage.getData2() <= RESET_MAX) {
                         sequencer.trigger(true);
                     }
                     break;
                 case NOTE_OFF:
-//                    System.out.printf("NOTE_OFF\n");
                     break;
                 case START:
-                    System.out.printf("START\n");
                     break;
                 case STOP:
-                    System.out.printf("STOP\n");
                     break;
                 case CONTROL_CHANGE:
-                    System.out.printf("CC %d, %d\n", shortMessage.getData1(), shortMessage.getData2());
                     break;
                 case TIMING_CLOCK:
-                    System.out.printf("TIMING_CLOCK\n");
                     break;
                 case 0xF0:
                     // sysex
                     break;
                 default:
-                    System.out.printf("Other: %d, %s\n", command, shortMessage);
                     break;
             }
         } else {
-            System.out.printf("Not short: %s\n", message);
-
+//            System.out.printf("Not short: %s\n", message);
         }
 
     }
