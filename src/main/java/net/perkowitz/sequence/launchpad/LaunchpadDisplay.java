@@ -35,6 +35,10 @@ public class LaunchpadDisplay implements SequencerDisplay {
             displayPattern(pattern);
         }
 
+        for (FillPattern fill : session.getFills()) {
+            displayFill(fill);
+        }
+
         Pattern pattern = memory.selectedPattern();
         for (Track track : pattern.getTracks()) {
             displayTrack(track);
