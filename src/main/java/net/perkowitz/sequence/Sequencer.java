@@ -60,7 +60,13 @@ public class Sequencer implements SequencerInterface  {
     private ValueMode valueMode = VELOCITY;
     private int currentFileIndex = 0;
 
+    // triggers and clocks
     private boolean triggerEnabled = true;
+    private boolean midiClockEnabled = true;
+    private boolean internalClockEnabled = false;
+    private boolean midiClockRunning = false;
+    private int clockTicksPerTrigger = 6;
+    private int tickCount = 0;
 
     private static CountDownLatch stop = new CountDownLatch(1);
     private Timer timer = null;
@@ -375,6 +381,33 @@ public class Sequencer implements SequencerInterface  {
         }
     }
 
+    public void clockTick() {
+        if (midiClockEnabled && midiClockRunning) {
+            if (tickCount % clockTicksPerTrigger == 0) {
+                advance(false);
+            }
+            tickCount++;
+        }
+    }
+
+    public void clockStart() {
+        if (midiClockEnabled) {
+            tickCount = 0;
+            midiClockRunning = true;
+            startStop(true);
+        }
+    }
+
+    public void clockStop() {
+        if (midiClockEnabled) {
+            tickCount = 0;
+            midiClockRunning = false;
+            startStop(false);
+        }
+
+    }
+
+
 
     /***** private implementation *********************************************************************/
 
@@ -387,7 +420,11 @@ public class Sequencer implements SequencerInterface  {
     }
 
     public void toggleStartStop() {
-        playing = !playing;
+        startStop(!playing);
+    }
+
+    public void startStop(boolean setToPlaying) {
+        playing = setToPlaying;
         if (playing) {
             display.displayMode(Mode.PLAY, true);
         } else {
@@ -404,6 +441,8 @@ public class Sequencer implements SequencerInterface  {
 
     }
 
+
+
     public void startTimer() {
 
         if (timer != null) {
@@ -414,7 +453,7 @@ public class Sequencer implements SequencerInterface  {
 
         timer.scheduleAtFixedRate(new TimerTask() {
             public void run() {
-                if (playing) {
+                if (playing && internalClockEnabled) {
                     boolean andReset = false;
                     if (totalStepCount % net.perkowitz.sequence.models.Track.getStepCount() == 0) {
                         andReset = true;

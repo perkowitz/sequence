@@ -50,6 +50,9 @@ public interface SequencerInterface {
     public void selectMode(Mode mode);
 
     public void trigger(boolean isReset);
+    public void clockTick();
+    public void clockStart();
+    public void clockStop();
 
 
 
