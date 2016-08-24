@@ -28,7 +28,7 @@ public interface SequencerInterface {
     public static final Mode[] SETTINGS_MODULE_MODES = new Mode[] { PLAY, EXIT, SEQUENCE, SETTINGS};
 
     public enum ValueMode {
-        VELOCITY, TEMPO
+        VELOCITY, TEMPO, FILL_PERCENT
     }
 
     public enum SyncMode {
@@ -43,6 +43,7 @@ public interface SequencerInterface {
     public void setSync(SyncMode syncMode);
 
     public void selectPatterns(int minIndex, int maxIndex);
+    public void selectFill(int index);
     public void selectTrack(int index);
     public void selectStep(int index);
     public void selectValue(int index);

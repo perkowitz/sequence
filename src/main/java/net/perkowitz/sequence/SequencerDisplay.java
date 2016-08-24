@@ -26,6 +26,7 @@ public interface SequencerDisplay {
     public void displayFiles(int currentFileIndex);
 
     public void displayPattern(Pattern pattern);
+    public void displayFill(FillPattern fill);
 
     public void displayTrack(Track track, boolean displaySteps);
     public void displayTrack(Track track);

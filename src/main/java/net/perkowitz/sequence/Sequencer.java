@@ -3,9 +3,7 @@ package net.perkowitz.sequence;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.io.Files;
-import net.perkowitz.sequence.models.Memory;
-import net.perkowitz.sequence.models.Pattern;
-import net.perkowitz.sequence.models.Step;
+import net.perkowitz.sequence.models.*;
 import net.perkowitz.sequence.models.Track;
 import org.codehaus.jackson.map.ObjectMapper;
 
@@ -14,6 +12,7 @@ import java.io.File;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
 
+import static net.perkowitz.sequence.SequencerInterface.ValueMode.FILL_PERCENT;
 import static net.perkowitz.sequence.SequencerInterface.ValueMode.TEMPO;
 import static net.perkowitz.sequence.SequencerInterface.ValueMode.VELOCITY;
 
@@ -28,6 +27,8 @@ public class Sequencer implements SequencerInterface  {
     private static final int VELOCITY_MAX = 128;
     private static final int TEMPO_MIN = 100;
     private static final int TEMPO_MAX = 132;
+    private static final int FILL_PERCENT_MIN = 9;
+    private static final int FILL_PERCENT_MAX = 113;
     private static final String FILENAME_PREFIX = "sequencer-";
     private static final String FILENAME_SUFFIX = ".json";
 
@@ -47,6 +48,7 @@ public class Sequencer implements SequencerInterface  {
     private Memory memory;
     private int totalStepCount = 0;
     private int nextStepIndex = 0;
+    private int totalMeasureCount = 0;
     private int tempo = 120;
     private int tempoIntervalInMillis = 125 * 120 / tempo;
 
@@ -152,6 +154,11 @@ public class Sequencer implements SequencerInterface  {
             memory.select(pattern);
             display.displayPattern(selected);
             display.displayPattern(pattern);
+
+            // clear value in case a fill was being displayed
+            valueMode = VELOCITY;
+            display.clearValue();
+
         } else {
             // retrieve current selected pattern and chain and save them to re-display
             Set<Pattern> patternsToDisplay = Sets.newHashSet();
@@ -177,6 +184,28 @@ public class Sequencer implements SequencerInterface  {
             }
         }
 
+    }
+
+    public void selectFill(int index) {
+
+        if (patternEditMode) {
+            Pattern selected = memory.selectedPattern();
+            FillPattern fill = memory.selectedSession().getFill(index);
+            memory.setSpecialSelected(true);
+            memory.select(fill);
+            display.displayPattern(selected);
+            display.displayFill(fill);
+
+            int fillPercent = fill.getFillPercent();
+            valueMode = FILL_PERCENT;
+            display.displayValue(fillPercent, FILL_PERCENT_MIN, FILL_PERCENT_MAX, FILL_PERCENT);
+
+
+        } else {
+            FillPattern fill = memory.selectedSession().getFill(index);
+            fill.setChained(!fill.isChained());
+            display.displayFill(fill);
+        }
     }
 
 
@@ -223,6 +252,7 @@ public class Sequencer implements SequencerInterface  {
     }
 
     public void selectValue(int index) {
+
 //        System.out.printf("selectValue: %d\n", index);
         if (valueMode == VELOCITY) {
             Step step = memory.selectedStep();
@@ -232,12 +262,22 @@ public class Sequencer implements SequencerInterface  {
                 step.setVelocity(velocity);
                 display.displayValue(velocity, VELOCITY_MIN, VELOCITY_MAX, ValueMode.VELOCITY);
             }
+
         } else if (valueMode == TEMPO) {
             tempo = index * (TEMPO_MAX - TEMPO_MIN) / 8 + TEMPO_MIN;
             tempoIntervalInMillis = 125 * 120 / tempo;
 //            System.out.printf("Tempo: %d, %d\n", tempo, tempoIntervalInMillis);
             display.displayValue(tempo, TEMPO_MIN, TEMPO_MAX, ValueMode.TEMPO);
             startTimer();
+
+        } else if (valueMode == FILL_PERCENT) {
+            Pattern pattern = memory.selectedPattern();
+            if (pattern instanceof FillPattern) {
+                int fillPercent = index * (FILL_PERCENT_MAX - FILL_PERCENT_MIN) / 8 + FILL_PERCENT_MIN;
+                FillPattern fillPattern = (FillPattern) pattern;
+                fillPattern.setFillPercent(fillPercent);
+                display.displayValue(fillPercent, FILL_PERCENT_MIN, FILL_PERCENT_MAX, ValueMode.FILL_PERCENT);
+            }
         }
     }
 
@@ -353,6 +393,7 @@ public class Sequencer implements SequencerInterface  {
         } else {
             display.displayMode(Mode.PLAY, false);
             totalStepCount = 0;
+            totalMeasureCount = 0;
         }
         nextStepIndex = 0;
         memory.resetPatternChainIndex();
@@ -388,19 +429,6 @@ public class Sequencer implements SequencerInterface  {
         nextStepIndex = (stepNumber + Track.getStepCount()) % Track.getStepCount();
     }
 
-    private void nextPattern(Pattern nextPattern) {
-        Pattern playingPattern = memory.playingPattern();
-//        System.out.printf("nextPattern: playing=%s, chained=%s\n", playingPattern, nextPattern);
-        if (nextPattern != playingPattern) {
-            int selectedTrackIndex = memory.selectedTrack().getIndex();
-            memory.select(nextPattern);
-            memory.select(nextPattern.getTrack(selectedTrackIndex));
-            display.displayPattern(playingPattern);
-            display.displayPattern(nextPattern);
-        }
-
-    }
-
     private void advance(boolean andReset) {
 
         if (andReset) {
@@ -412,8 +440,9 @@ public class Sequencer implements SequencerInterface  {
         boolean isNewPattern = false;
         Pattern currentPattern = null;
         if (nextStepIndex == 0) {
+            totalMeasureCount++;
             currentPattern = memory.playingPattern();
-            Pattern next = memory.advancePattern();
+            Pattern next = memory.advancePattern(totalMeasureCount);
             if (next != currentPattern) {
                 isNewPattern = true;
             }

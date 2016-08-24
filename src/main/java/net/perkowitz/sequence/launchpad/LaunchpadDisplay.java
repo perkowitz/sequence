@@ -1,6 +1,5 @@
 package net.perkowitz.sequence.launchpad;
 
-import com.google.common.collect.Maps;
 import net.perkowitz.sequence.SequencerDisplay;
 import net.perkowitz.sequence.SequencerInterface;
 import net.perkowitz.sequence.models.*;
@@ -36,6 +35,10 @@ public class LaunchpadDisplay implements SequencerDisplay {
             displayPattern(pattern);
         }
 
+        for (FillPattern fill : session.getFills()) {
+            displayFill(fill);
+        }
+
         Pattern pattern = memory.selectedPattern();
         for (Track track : pattern.getTracks()) {
             displayTrack(track);
@@ -48,14 +51,6 @@ public class LaunchpadDisplay implements SequencerDisplay {
     }
 
     public void displayHelp() {
-
-        // session buttons are yellow
-//        Color sessionColor = Color.of(1,2);
-//        for (int y = SESSIONS_MIN_ROW; y <= SESSIONS_MAX_ROW; y++) {
-//            for (int x = 0; x < 8; x++) {
-//                launchpadClient.setPadLight(Pad.at(x, y), sessionColor, BackBufferOperation.NONE);
-//            }
-//        }
 
         // pattern buttons are green
         Color patternColor = LaunchpadUtil.COLOR_PLAYING_DIM;
@@ -155,6 +150,11 @@ public class LaunchpadDisplay implements SequencerDisplay {
         int x = getX(pattern.getIndex());
         int y = LaunchpadUtil.PATTERNS_MIN_ROW + getY(pattern.getIndex());
 
+        if (pattern instanceof FillPattern) {
+            y = LaunchpadUtil.FILLS_MIN_ROW + getY(pattern.getIndex());
+        }
+
+
         Color color = COLOR_PLAYING_DIM;
         if (pattern.isSelected() && pattern.isPlaying()) {
             color = COLOR_SELECTED;
@@ -178,6 +178,11 @@ public class LaunchpadDisplay implements SequencerDisplay {
         }
 
     }
+
+    public void displayFill(FillPattern fill) {
+        displayPattern(fill);
+    }
+
 
     public void displayTrack(Track track) {
         displayTrack(track, true);
@@ -303,6 +308,8 @@ public class LaunchpadDisplay implements SequencerDisplay {
         Color color = LaunchpadUtil.COLOR_DISABLED;
         if (valueMode == SequencerInterface.ValueMode.TEMPO) {
             color = LaunchpadUtil.COLOR_PLAYING;
+        } else if (valueMode == SequencerInterface.ValueMode.FILL_PERCENT) {
+            color = LaunchpadUtil.COLOR_SELECTED;
         }
 
         for (int b = 0; b < 8; b++) {

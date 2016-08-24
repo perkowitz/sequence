@@ -8,8 +8,11 @@ import lombok.Setter;
  */
 public class Session {
 
-    @Getter @Setter private static int patternCount = 8;
+    @Getter @Setter private static int patternCount = 16;
     @Getter private Pattern[] patterns;
+
+    @Getter @Setter private static int fillCount = 8;
+    @Getter private FillPattern[] fills;
 
     @Getter private int index;
     @Getter @Setter private boolean selected = false;
@@ -26,10 +29,16 @@ public class Session {
             patterns[i] = new Pattern(i);
         }
 
+        this.fills = new FillPattern[fillCount];
+        for (int i = 0; i < fillCount; i++) {
+            fills[i] = new FillPattern(i, (int)Math.pow(2, (i / 2) + 1));
+        }
+
     }
 
     public Pattern getPattern(int index) {
         return patterns[index % patternCount];
     }
+    public FillPattern getFill(int index) { return fills[index % fillCount]; }
 
 }
