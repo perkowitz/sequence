@@ -103,6 +103,8 @@ public class Memory {
         }
         selectedSession = session;
         selectedSession.setSelected(true);
+        selectedSessionIndex = session.getIndex();
+        session.setNext(false);
     }
 
     public void select(Pattern pattern) {

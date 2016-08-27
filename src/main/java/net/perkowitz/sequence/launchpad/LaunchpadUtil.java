@@ -35,7 +35,7 @@ public class LaunchpadUtil {
     public static Color COLOR_ENABLED = Color.of(3,0);
     public static Color COLOR_DISABLED = Color.of(1,0);
     public static Color COLOR_SELECTED = Color.of(3,1);
-    public static Color COLOR_SELECTED_DIM = Color.of(2,2);
+    public static Color COLOR_SELECTED_DIM = Color.of(1,1);
     public static Color COLOR_PLAYING = Color.of(0,3);
     public static Color COLOR_PLAYING_DIM = Color.of(0,1);
     public static Color COLOR_PLAYING_SELECTED = Color.of(1,3);

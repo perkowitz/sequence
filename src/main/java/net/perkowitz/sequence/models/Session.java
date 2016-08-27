@@ -16,6 +16,7 @@ public class Session {
 
     @Getter private int index;
     @Getter @Setter private boolean selected = false;
+    @Getter @Setter private boolean next = false;
 
     // only used for deserializing JSON; Session should always be created with an index
     public Session() {}

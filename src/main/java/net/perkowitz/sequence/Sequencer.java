@@ -59,6 +59,7 @@ public class Sequencer implements SequencerInterface  {
     private boolean patternEditMode = false;
     private ValueMode valueMode = VELOCITY;
     private int currentFileIndex = 0;
+    private Session nextSession = null;
 
     // triggers and clocks
     private boolean midiClockRunning = false;
@@ -126,7 +127,9 @@ public class Sequencer implements SequencerInterface  {
     }
 
     public void selectSession(int index) {
-
+        nextSession = memory.getSession(index);
+        nextSession.setNext(true);
+        display.displaySession(nextSession);
     }
 
     public void loadData(int index) {
@@ -442,6 +445,15 @@ public class Sequencer implements SequencerInterface  {
 
     }
 
+    private void advanceSession() {
+        Session currentSession = memory.selectedSession();
+        if (nextSession != null && nextSession != currentSession) {
+            memory.select(nextSession);
+            display.displaySession(currentSession);
+            display.displaySession(nextSession);
+            nextSession = null;
+        }
+    }
 
 
     public void startTimer() {
@@ -480,6 +492,12 @@ public class Sequencer implements SequencerInterface  {
         boolean isNewPattern = false;
         Pattern currentPattern = null;
         if (nextStepIndex == 0) {
+
+            // check for new session
+            if (nextSession != null) {
+                advanceSession();
+            }
+
             totalMeasureCount++;
             currentPattern = memory.playingPattern();
             Pattern next = memory.advancePattern(totalMeasureCount);
