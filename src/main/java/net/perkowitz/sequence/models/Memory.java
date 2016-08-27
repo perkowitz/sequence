@@ -43,7 +43,8 @@ public class Memory {
 
         this.sessions = new Session[sessionCount];
         for (int i = 0; i < sessionCount; i++) {
-            sessions[i] = new Session(i);
+//            sessions[i] = new Session(i);
+            sessions[i] = null;
         }
 
         select(getSession(0));
@@ -91,9 +92,14 @@ public class Memory {
         return selectedSession().getPattern(patternChainIndex);
     }
 
-
     public Session getSession(int index) {
-        return sessions[index % sessionCount];
+        index = index % sessionCount;
+        Session session = sessions[index];
+        if (session == null) {
+            session = new Session(index);
+            sessions[index] = session;
+        }
+        return session;
     }
 
     public void select(Session session) {
@@ -185,7 +191,7 @@ public class Memory {
         int percentSum = 0;
         List<FillPattern> readyFills = Lists.newArrayList();
         for (FillPattern fill : selectedSession().getFills()) {
-            if (fill.isChained() && measureNumber % fill.getFillInterval() == 0) {
+            if (fill != null && fill.isChained() && measureNumber % fill.getFillInterval() == 0) {
                 if (readyFills.size() == 0) {
                     readyFills.add(fill);
                     maxInterval = fill.getFillInterval();

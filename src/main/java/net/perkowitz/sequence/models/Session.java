@@ -26,20 +26,35 @@ public class Session {
         this.index = index;
 
         this.patterns = new Pattern[patternCount];
-        for (int i = 0; i < patternCount; i++) {
-            patterns[i] = new Pattern(i);
-        }
+//        for (int i = 0; i < patternCount; i++) {
+//            patterns[i] = new Pattern(i);
+//        }
 
         this.fills = new FillPattern[fillCount];
-        for (int i = 0; i < fillCount; i++) {
-            fills[i] = new FillPattern(i, (int)Math.pow(2, (i / 2) + 1));
-        }
+//        for (int i = 0; i < fillCount; i++) {
+//            fills[i] = new FillPattern(i, (int)Math.pow(2, (i / 2) + 1));
+//        }
 
     }
 
     public Pattern getPattern(int index) {
-        return patterns[index % patternCount];
+        index = index % patternCount;
+        Pattern pattern = patterns[index];
+        if (pattern == null) {
+            pattern = new Pattern(index);
+            patterns[index] = pattern;
+        }
+        return pattern;
     }
-    public FillPattern getFill(int index) { return fills[index % fillCount]; }
+
+    public FillPattern getFill(int index) {
+        index = index % fillCount;
+        FillPattern fill = fills[index];
+        if (fill == null) {
+            fill = new FillPattern(index, (int)Math.pow(2, (index / 2) + 1));
+            fills[index] = fill;
+        }
+        return fill;
+    }
 
 }

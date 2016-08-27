@@ -152,6 +152,8 @@ public class LaunchpadDisplay implements SequencerDisplay {
 
         if (currentModule != SequencerInterface.Module.SEQUENCE) { return; }
 
+        if (pattern == null) { return; }
+
         int x = getX(pattern.getIndex());
         int y = LaunchpadUtil.PATTERNS_MIN_ROW + getY(pattern.getIndex());
 
