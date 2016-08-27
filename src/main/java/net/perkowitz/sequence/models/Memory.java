@@ -242,7 +242,11 @@ public class Memory {
     }
 
     public Boolean isSet(SequencerInterface.Switch switchx) {
-        return settingsSwitches.get(switchx);
+        Boolean isSet = settingsSwitches.get(switchx);
+        if (isSet == null) {
+            isSet = false;
+        }
+        return isSet;
     }
 
 

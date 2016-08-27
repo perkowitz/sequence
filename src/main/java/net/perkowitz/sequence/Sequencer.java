@@ -97,7 +97,6 @@ public class Sequencer implements SequencerInterface  {
             modeIsActiveMap.put(mode, true);
         }
 
-
         display.initialize();
         display.displayHelp();
         Thread.sleep(1000);
@@ -384,7 +383,7 @@ public class Sequencer implements SequencerInterface  {
     }
 
     public void clockTick() {
-        if (memory.isSet(Switch.MIDI_CLOCK_ENABLED) && midiClockRunning) {
+        if (memory != null && memory.isSet(Switch.MIDI_CLOCK_ENABLED) && midiClockRunning) {
             if (tickCount % clockTicksPerTrigger == 0) {
                 advance(false);
             }
