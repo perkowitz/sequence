@@ -98,6 +98,16 @@ public class LaunchpadController extends LaunchpadListenerAdapter implements Seq
                     int index = pad.getX() + (pad.getY() - SAVE_ROW) * 8;
                     sequencer.saveData(index);
 
+                } else if (pad.getY() == SWITCHES_ROW) {
+                    // toggling a switch
+                    if (pad.equals(switchPadMap.get(SequencerInterface.Switch.INTERNAL_CLOCK_ENABLED))) {
+                        sequencer.selectSwitch(SequencerInterface.Switch.INTERNAL_CLOCK_ENABLED);
+                    } else if (pad.equals(switchPadMap.get(SequencerInterface.Switch.MIDI_CLOCK_ENABLED))) {
+                        sequencer.selectSwitch(SequencerInterface.Switch.MIDI_CLOCK_ENABLED);
+                    } else if (pad.equals(switchPadMap.get(SequencerInterface.Switch.TRIGGER_ENABLED))) {
+                        sequencer.selectSwitch(SequencerInterface.Switch.TRIGGER_ENABLED);
+                    }
+
                 }
 
             }

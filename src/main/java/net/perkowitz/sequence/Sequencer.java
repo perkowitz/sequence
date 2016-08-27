@@ -61,9 +61,6 @@ public class Sequencer implements SequencerInterface  {
     private int currentFileIndex = 0;
 
     // triggers and clocks
-    private boolean triggerEnabled = true;
-    private boolean midiClockEnabled = true;
-    private boolean internalClockEnabled = false;
     private boolean midiClockRunning = false;
     private int clockTicksPerTrigger = 6;
     private int tickCount = 0;
@@ -375,14 +372,19 @@ public class Sequencer implements SequencerInterface  {
         }
     }
 
+    public void selectSwitch(Switch switchx) {
+        memory.flipSwitch(switchx);
+        display.displaySwitches(memory.getSettingsSwitches());
+    }
+
     public void trigger(boolean isReset) {
-        if (triggerEnabled) {
+        if (memory.isSet(Switch.TRIGGER_ENABLED)) {
             advance(isReset);
         }
     }
 
     public void clockTick() {
-        if (midiClockEnabled && midiClockRunning) {
+        if (memory.isSet(Switch.MIDI_CLOCK_ENABLED) && midiClockRunning) {
             if (tickCount % clockTicksPerTrigger == 0) {
                 advance(false);
             }
@@ -391,7 +393,7 @@ public class Sequencer implements SequencerInterface  {
     }
 
     public void clockStart() {
-        if (midiClockEnabled) {
+        if (memory.isSet(Switch.MIDI_CLOCK_ENABLED)) {
             tickCount = 0;
             midiClockRunning = true;
             startStop(true);
@@ -399,7 +401,7 @@ public class Sequencer implements SequencerInterface  {
     }
 
     public void clockStop() {
-        if (midiClockEnabled) {
+        if (memory.isSet(Switch.MIDI_CLOCK_ENABLED)) {
             tickCount = 0;
             midiClockRunning = false;
             startStop(false);
@@ -453,7 +455,7 @@ public class Sequencer implements SequencerInterface  {
 
         timer.scheduleAtFixedRate(new TimerTask() {
             public void run() {
-                if (playing && internalClockEnabled) {
+                if (playing && memory.isSet(Switch.INTERNAL_CLOCK_ENABLED)) {
                     boolean andReset = false;
                     if (totalStepCount % net.perkowitz.sequence.models.Track.getStepCount() == 0) {
                         andReset = true;

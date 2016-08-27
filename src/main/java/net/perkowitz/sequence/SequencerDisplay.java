@@ -44,4 +44,6 @@ public interface SequencerDisplay {
 
     public void selectModule(SequencerInterface.Module module);
 
+    public void displaySwitches(Map<SequencerInterface.Switch, Boolean> switches);
+
 }

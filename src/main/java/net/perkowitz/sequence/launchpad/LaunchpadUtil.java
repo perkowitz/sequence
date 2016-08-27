@@ -18,6 +18,7 @@ public class LaunchpadUtil {
     public static int SESSIONS_MAX_ROW = 1;
     public static int LOAD_ROW = 2;
     public static int SAVE_ROW = 3;
+    public static int SWITCHES_ROW = 7;
 
     // sequence module
     public static int PATTERNS_MIN_ROW = 0;
@@ -52,15 +53,20 @@ public class LaunchpadUtil {
 //        modeButtonMap.put(SequencerInterface.Mode.CLEAR, Button.DOWN);
         modeButtonMap.put(SequencerInterface.Mode.PATTERN_EDIT, Button.UP);
 
-        int modeButtonRow = 3;
-        modePadMap.put(SequencerInterface.Mode.TRACK_MUTE, Pad.at(0, modeButtonRow));
-        modePadMap.put(SequencerInterface.Mode.TRACK_EDIT, Pad.at(1, modeButtonRow));
-        modePadMap.put(SequencerInterface.Mode.STEP_MUTE, Pad.at(4, modeButtonRow));
-        modePadMap.put(SequencerInterface.Mode.STEP_VELOCITY, Pad.at(5, modeButtonRow));
-        modePadMap.put(SequencerInterface.Mode.STEP_JUMP, Pad.at(6, modeButtonRow));
-        modePadMap.put(SequencerInterface.Mode.STEP_PLAY, Pad.at(7, modeButtonRow));
+        modePadMap.put(SequencerInterface.Mode.TRACK_MUTE, Pad.at(0, MODE_ROW));
+        modePadMap.put(SequencerInterface.Mode.TRACK_EDIT, Pad.at(1, MODE_ROW));
+        modePadMap.put(SequencerInterface.Mode.STEP_MUTE, Pad.at(4, MODE_ROW));
+        modePadMap.put(SequencerInterface.Mode.STEP_VELOCITY, Pad.at(5, MODE_ROW));
+        modePadMap.put(SequencerInterface.Mode.STEP_JUMP, Pad.at(6, MODE_ROW));
+        modePadMap.put(SequencerInterface.Mode.STEP_PLAY, Pad.at(7, MODE_ROW));
     }
 
+    public static Map<SequencerInterface.Switch, Pad> switchPadMap = Maps.newHashMap();
+    static {
+        switchPadMap.put(SequencerInterface.Switch.INTERNAL_CLOCK_ENABLED, Pad.at(5,SWITCHES_ROW));
+        switchPadMap.put(SequencerInterface.Switch.MIDI_CLOCK_ENABLED, Pad.at(6,SWITCHES_ROW));
+        switchPadMap.put(SequencerInterface.Switch.TRIGGER_ENABLED, Pad.at(7,SWITCHES_ROW));
+    }
 
 
 }
