@@ -108,6 +108,9 @@ public class LaunchpadDisplay implements SequencerDisplay {
                 if (modeIsActiveMap != null) {
                     displayModes(modeIsActiveMap);
                 }
+
+                displaySwitches(memory.getSettingsSwitches());
+
                 break;
         }
 
@@ -325,6 +328,26 @@ public class LaunchpadDisplay implements SequencerDisplay {
     public void selectModule(SequencerInterface.Module module) {
         currentModule = module;
     }
+
+    public void displaySwitches(Map<SequencerInterface.Switch, Boolean> switches) {
+
+        if (currentModule != SequencerInterface.Module.SETTINGS) { return; }
+
+        Color off = LaunchpadUtil.COLOR_DISABLED;
+        Color on = LaunchpadUtil.COLOR_PLAYING;
+
+        for (SequencerInterface.Switch switchx : switches.keySet()) {
+            if (switchPadMap.get(switchx) != null) {
+                if (switches.get(switchx)) {
+                    launchpadClient.setPadLight(switchPadMap.get(switchx), on, BackBufferOperation.NONE);
+                } else {
+                    launchpadClient.setPadLight(switchPadMap.get(switchx), off, BackBufferOperation.NONE);
+                }
+            }
+        }
+
+    }
+
 
 
 

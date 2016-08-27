@@ -21,6 +21,12 @@ public interface SequencerInterface {
         STEP_MUTE, STEP_VELOCITY, STEP_JUMP, STEP_PLAY
     }
 
+    public enum Switch {
+        TRIGGER_ENABLED, MIDI_CLOCK_ENABLED, INTERNAL_CLOCK_ENABLED
+    }
+
+
+
     public static final Mode[] TRACK_MODES = new Mode[] { TRACK_MUTE, TRACK_EDIT };
     public static final Mode[] STEP_MODES = new Mode[] { STEP_MUTE, STEP_VELOCITY, STEP_JUMP, STEP_PLAY };
 
@@ -48,8 +54,12 @@ public interface SequencerInterface {
     public void selectStep(int index);
     public void selectValue(int index);
     public void selectMode(Mode mode);
+    public void selectSwitch(Switch switchx);
 
     public void trigger(boolean isReset);
+    public void clockTick();
+    public void clockStart();
+    public void clockStop();
 
 
 

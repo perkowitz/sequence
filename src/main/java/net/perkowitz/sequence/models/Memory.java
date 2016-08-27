@@ -1,10 +1,17 @@
 package net.perkowitz.sequence.models;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import lombok.Getter;
 import lombok.Setter;
+import net.perkowitz.sequence.SequencerInterface;
 
 import java.util.List;
+import java.util.Map;
+
+import static net.perkowitz.sequence.SequencerInterface.Switch.INTERNAL_CLOCK_ENABLED;
+import static net.perkowitz.sequence.SequencerInterface.Switch.MIDI_CLOCK_ENABLED;
+import static net.perkowitz.sequence.SequencerInterface.Switch.TRIGGER_ENABLED;
 
 /**
  * Created by optic on 7/9/16.
@@ -29,6 +36,9 @@ public class Memory {
     @Getter @Setter private boolean specialSelected = false;
     @Getter @Setter private boolean copyMutesToNew = true;
 
+    @Getter @Setter private Map<SequencerInterface.Switch, Boolean> settingsSwitches = Maps.newHashMap();
+    @Getter @Setter private Map<SequencerInterface.Switch, Integer> settingsValues = Maps.newHashMap();
+
     public Memory() {
 
         this.sessions = new Session[sessionCount];
@@ -41,6 +51,12 @@ public class Memory {
         select(selectedPattern().getTrack(8));
         setPatternChain(0, 0, 0);
         playingPatternIndex = 0;
+
+        settingsSwitches.put(TRIGGER_ENABLED, true);
+        settingsSwitches.put(MIDI_CLOCK_ENABLED, true);
+        settingsSwitches.put(INTERNAL_CLOCK_ENABLED, true);
+
+
 
     }
 
@@ -214,6 +230,19 @@ public class Memory {
         }
 
         return next;
+    }
+
+    public Boolean flipSwitch(SequencerInterface.Switch switchx) {
+        Boolean isSet = isSet(switchx);
+        if (isSet != null) {
+            settingsSwitches.put(switchx, !isSet);
+            return !isSet;
+        }
+        return null;
+    }
+
+    public Boolean isSet(SequencerInterface.Switch switchx) {
+        return settingsSwitches.get(switchx);
     }
 
 

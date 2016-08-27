@@ -60,7 +60,10 @@ public class Sequencer implements SequencerInterface  {
     private ValueMode valueMode = VELOCITY;
     private int currentFileIndex = 0;
 
-    private boolean triggerEnabled = true;
+    // triggers and clocks
+    private boolean midiClockRunning = false;
+    private int clockTicksPerTrigger = 6;
+    private int tickCount = 0;
 
     private static CountDownLatch stop = new CountDownLatch(1);
     private Timer timer = null;
@@ -369,11 +372,43 @@ public class Sequencer implements SequencerInterface  {
         }
     }
 
+    public void selectSwitch(Switch switchx) {
+        memory.flipSwitch(switchx);
+        display.displaySwitches(memory.getSettingsSwitches());
+    }
+
     public void trigger(boolean isReset) {
-        if (triggerEnabled) {
+        if (memory.isSet(Switch.TRIGGER_ENABLED)) {
             advance(isReset);
         }
     }
+
+    public void clockTick() {
+        if (memory.isSet(Switch.MIDI_CLOCK_ENABLED) && midiClockRunning) {
+            if (tickCount % clockTicksPerTrigger == 0) {
+                advance(false);
+            }
+            tickCount++;
+        }
+    }
+
+    public void clockStart() {
+        if (memory.isSet(Switch.MIDI_CLOCK_ENABLED)) {
+            tickCount = 0;
+            midiClockRunning = true;
+            startStop(true);
+        }
+    }
+
+    public void clockStop() {
+        if (memory.isSet(Switch.MIDI_CLOCK_ENABLED)) {
+            tickCount = 0;
+            midiClockRunning = false;
+            startStop(false);
+        }
+
+    }
+
 
 
     /***** private implementation *********************************************************************/
@@ -387,7 +422,11 @@ public class Sequencer implements SequencerInterface  {
     }
 
     public void toggleStartStop() {
-        playing = !playing;
+        startStop(!playing);
+    }
+
+    public void startStop(boolean setToPlaying) {
+        playing = setToPlaying;
         if (playing) {
             display.displayMode(Mode.PLAY, true);
         } else {
@@ -404,6 +443,8 @@ public class Sequencer implements SequencerInterface  {
 
     }
 
+
+
     public void startTimer() {
 
         if (timer != null) {
@@ -414,7 +455,7 @@ public class Sequencer implements SequencerInterface  {
 
         timer.scheduleAtFixedRate(new TimerTask() {
             public void run() {
-                if (playing) {
+                if (playing && memory.isSet(Switch.INTERNAL_CLOCK_ENABLED)) {
                     boolean andReset = false;
                     if (totalStepCount % net.perkowitz.sequence.models.Track.getStepCount() == 0) {
                         andReset = true;
