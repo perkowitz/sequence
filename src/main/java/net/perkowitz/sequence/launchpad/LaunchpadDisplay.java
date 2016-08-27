@@ -126,6 +126,8 @@ public class LaunchpadDisplay implements SequencerDisplay {
         Color color = LaunchpadUtil.COLOR_SELECTED_DIM;
         if (session.isSelected()) {
             color = LaunchpadUtil.COLOR_SELECTED;
+        } else if (session.isNext()) {
+            color = LaunchpadUtil.COLOR_DISABLED;
         }
         launchpadClient.setPadLight(Pad.at(x, y), color, BackBufferOperation.NONE);
 
