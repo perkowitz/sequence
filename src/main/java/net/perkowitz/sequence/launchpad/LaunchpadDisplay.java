@@ -8,6 +8,7 @@ import net.thecodersbreakfast.lp4j.api.*;
 import java.util.Arrays;
 import java.util.Map;
 
+import static net.perkowitz.sequence.SequencerInterface.Mode.EXIT;
 import static net.perkowitz.sequence.SequencerInterface.SETTINGS_MODULE_MODES;
 import static net.perkowitz.sequence.launchpad.LaunchpadUtil.*;
 
@@ -271,7 +272,11 @@ public class LaunchpadDisplay implements SequencerDisplay {
             return;
         }
 
-        Color color = Color.of(2,1);
+        if (mode == EXIT && !LaunchpadUtil.debugMode) {
+            return;
+        }
+
+        Color color = COLOR_DISABLED;// Color.of(2,1);
         if (isActive) {
             color = COLOR_PLAYING;
         }

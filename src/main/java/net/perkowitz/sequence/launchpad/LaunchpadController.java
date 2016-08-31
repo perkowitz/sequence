@@ -171,7 +171,9 @@ public class LaunchpadController extends LaunchpadListenerAdapter implements Seq
             sequencer.selectMode(SequencerInterface.Mode.PLAY);
 
         } else if (button.equals(modeButtonMap.get(SequencerInterface.Mode.EXIT))) {
-            sequencer.selectMode(SequencerInterface.Mode.EXIT);
+            if (LaunchpadUtil.debugMode) {
+                sequencer.selectMode(SequencerInterface.Mode.EXIT);
+            }
 
         } else if (button.equals(modeButtonMap.get(SequencerInterface.Mode.SEQUENCE))) {
             currentModule = SequencerInterface.Module.SEQUENCE;

@@ -13,6 +13,8 @@ import java.util.Map;
  */
 public class LaunchpadUtil {
 
+    public static boolean debugMode = true;
+
     // settings module
     public static int SESSIONS_MIN_ROW = 0;
     public static int SESSIONS_MAX_ROW = 1;
@@ -31,6 +33,7 @@ public class LaunchpadUtil {
     public static int STEPS_MIN_ROW = 6;
     public static int STEPS_MAX_ROW = 7;
 
+    // display colors
     public static Color COLOR_EMPTY = Color.of(0,0);
     public static Color COLOR_ENABLED = Color.of(3,0);
     public static Color COLOR_DISABLED = Color.of(1,0);
