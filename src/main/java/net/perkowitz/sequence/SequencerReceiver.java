@@ -13,7 +13,7 @@ public class SequencerReceiver implements Receiver {
 
     private static int STEP_MIN = 0;
     private static int STEP_MAX = 110;
-    private static int RESET_MIN = 11;
+    private static int RESET_MIN = 111;
     private static int RESET_MAX = 127;
     private static int MIDI_REALTIME_COMMAND = 0xF0;
 
