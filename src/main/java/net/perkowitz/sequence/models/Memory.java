@@ -52,8 +52,8 @@ public class Memory {
         setPatternChain(0, 0, 0);
         playingPatternIndex = 0;
 
-        settingsSwitches.put(TRIGGER_ENABLED, true);
-        settingsSwitches.put(MIDI_CLOCK_ENABLED, true);
+        settingsSwitches.put(TRIGGER_ENABLED, false);
+        settingsSwitches.put(MIDI_CLOCK_ENABLED, false);
         settingsSwitches.put(INTERNAL_CLOCK_ENABLED, true);
 
 
