@@ -10,20 +10,22 @@ but should be adaptable to other hardware.
 
 [User Manual](https://github.com/perkowitz/sequence/wiki/User%20Manual)
 
+https://github.com/perkowitz/sequence/issues?q=is%3Aopen+is%3Aissue+milestone%3AV1
+
 ## Versions and status
 
-### Version 0.1
+### Version 1.0
 
-#### Features
-- It's a usable drum sequencer!
-- Files, sessions, patterns, tracks, steps, velocity all working properly
-- Fairly stable running from internal clock or in MIDI trigger mode
+####
+- Released 9/4/2016
+- Files, sessions, patterns, fills, tracks, steps all working properly
+- Internal, MIDI clock, MIDI trigger modes all working
 
 #### Issues/missing
-- No MIDI clock sync
-- Limited tempo settings
+- Limited tempo range when using internal clock
 - Occasional issue where won't play on startup; select any track to continue normally
 - Can't change MIDI send/trigger channels or note numbers
-- No fill patterns
+- Some issues with selecting and playing patterns, especially when 
+  restarting a previously-saved session.
+- [List open open V1 issues](https://github.com/perkowitz/sequence/issues?q=is%3Aopen+is%3Aissue+milestone%3AV1)
 
-[List of open features & bugs](https://github.com/perkowitz/sequence/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-desc)
