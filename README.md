@@ -10,7 +10,7 @@ but should be adaptable to other hardware.
 
 [User Manual](https://github.com/perkowitz/sequence/wiki/User%20Manual)
 
-https://github.com/perkowitz/sequence/issues?q=is%3Aopen+is%3Aissue+milestone%3AV1
+[Feature and bug tracking](https://github.com/perkowitz/sequence/issues)
 
 ## Versions and status
 
@@ -20,6 +20,9 @@ https://github.com/perkowitz/sequence/issues?q=is%3Aopen+is%3Aissue+milestone%3A
 - Released 9/4/2016
 - Files, sessions, patterns, fills, tracks, steps all working properly
 - Internal, MIDI clock, MIDI trigger modes all working
+- Commit: [7d05816573c6079bcf51220c17ec67ba735f2ca9]
+(https://github.com/perkowitz/sequence/commit/7d05816573c6079bcf51220c17ec67ba735f2ca9)
+
 
 #### Issues/missing
 - Limited tempo range when using internal clock
@@ -27,5 +30,5 @@ https://github.com/perkowitz/sequence/issues?q=is%3Aopen+is%3Aissue+milestone%3A
 - Can't change MIDI send/trigger channels or note numbers
 - Some issues with selecting and playing patterns, especially when 
   restarting a previously-saved session.
-- [List open open V1 issues](https://github.com/perkowitz/sequence/issues?q=is%3Aopen+is%3Aissue+milestone%3AV1)
+- [List open V1 issues](https://github.com/perkowitz/sequence/issues?q=is%3Aopen+is%3Aissue+milestone%3AV1)
 
