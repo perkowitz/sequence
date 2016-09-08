@@ -1,4 +1,4 @@
-package net.perkowitz.sequence.launchpad;
+package net.perkowitz.sequence.devices.launchpad;
 
 import net.perkowitz.sequence.SequencerDisplay;
 import net.perkowitz.sequence.SequencerInterface;
@@ -10,7 +10,7 @@ import java.util.Map;
 
 import static net.perkowitz.sequence.SequencerInterface.Mode.EXIT;
 import static net.perkowitz.sequence.SequencerInterface.SETTINGS_MODULE_MODES;
-import static net.perkowitz.sequence.launchpad.LaunchpadUtil.*;
+import static net.perkowitz.sequence.devices.launchpad.LaunchpadUtil.*;
 
 /**
  * Created by optic on 7/10/16.
@@ -200,7 +200,10 @@ public class LaunchpadDisplay implements SequencerDisplay {
 
         int x = getX(track.getIndex());
         int y = LaunchpadUtil.TRACKS_MIN_ROW + getY(track.getIndex());
-//        System.out.printf("displayTrack: %s, x=%d, y=%d\n", track, x, y);
+//        if (displaySteps) {
+//            System.out.printf("displayTrack: %s, x=%d, y=%d, play=%s, enab=%s, sel=%s, dispStep=%s\n",
+//                    track, x, y, track.isPlaying(), track.isEnabled(), track.isSelected(), displaySteps);
+//        }
         if (track.isPlaying()) {
             if (track.isEnabled()) {
                 launchpadClient.setPadLight(Pad.at(x, y), LaunchpadUtil.COLOR_PLAYING, BackBufferOperation.NONE);

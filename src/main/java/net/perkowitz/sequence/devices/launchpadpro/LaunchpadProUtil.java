@@ -1,17 +1,16 @@
-package net.perkowitz.sequence.launchpad;
+package net.perkowitz.sequence.devices.launchpadpro;
 
 import com.google.common.collect.Maps;
 import net.perkowitz.sequence.SequencerInterface;
-import net.thecodersbreakfast.lp4j.api.Button;
-import net.thecodersbreakfast.lp4j.api.Color;
-import net.thecodersbreakfast.lp4j.api.Pad;
 
 import java.util.Map;
+
+import static net.perkowitz.sequence.devices.launchpadpro.Button.Side.Top;
 
 /**
  * Created by optic on 7/10/16.
  */
-public class LaunchpadUtil {
+public class LaunchpadProUtil {
 
     public static boolean debugMode = false;
 
@@ -34,27 +33,27 @@ public class LaunchpadUtil {
     public static int STEPS_MAX_ROW = 7;
 
     // display colors
-    public static Color COLOR_EMPTY = Color.of(0,0);
-    public static Color COLOR_ENABLED = Color.of(3,0);
-    public static Color COLOR_DISABLED = Color.of(1,0);
-    public static Color COLOR_SELECTED = Color.of(3,1);
-    public static Color COLOR_SELECTED_DIM = Color.of(1,1);
-    public static Color COLOR_PLAYING = Color.of(0,3);
-    public static Color COLOR_PLAYING_DIM = Color.of(0,1);
-    public static Color COLOR_PLAYING_SELECTED = Color.of(1,3);
+    public static Color COLOR_EMPTY = Color.OFF;
+    public static Color COLOR_ENABLED = Color.BRIGHT_RED;
+    public static Color COLOR_DISABLED = Color.DIM_BLUEGRAY;
+    public static Color COLOR_SELECTED = Color.WHITE;
+    public static Color COLOR_SELECTED_DIM = Color.MED_GRAY;
+    public static Color COLOR_PLAYING = Color.BRIGHT_GREEN;
+    public static Color COLOR_PLAYING_DIM = Color.DARK_GRAY;
+    public static Color COLOR_PLAYING_SELECTED = Color.BRIGHT_YELLOW;
 
     public static Map<SequencerInterface.Mode, Button> modeButtonMap = Maps.newHashMap();
     public static Map<SequencerInterface.Mode, Pad> modePadMap = Maps.newHashMap();
     static {
-        modeButtonMap.put(SequencerInterface.Mode.PLAY, Button.RIGHT);
-        modeButtonMap.put(SequencerInterface.Mode.EXIT, Button.MIXER);
-        modeButtonMap.put(SequencerInterface.Mode.SAVE, Button.SESSION);
-        modeButtonMap.put(SequencerInterface.Mode.TEMPO, Button.LEFT);
-        modeButtonMap.put(SequencerInterface.Mode.SEQUENCE, Button.USER_1);
-        modeButtonMap.put(SequencerInterface.Mode.SETTINGS, Button.USER_2);
+        modeButtonMap.put(SequencerInterface.Mode.PLAY, Button.at(Top, 3));
+        modeButtonMap.put(SequencerInterface.Mode.EXIT, Button.at(Top, 7));
+        modeButtonMap.put(SequencerInterface.Mode.SAVE, Button.at(Top, 4));
+        modeButtonMap.put(SequencerInterface.Mode.TEMPO, Button.at(Top, 2));
+        modeButtonMap.put(SequencerInterface.Mode.SEQUENCE, Button.at(Top, 5));
+        modeButtonMap.put(SequencerInterface.Mode.SETTINGS, Button.at(Top, 6));
 //        modeButtonMap.put(SequencerInterface.Mode.COPY, Button.UP);
 //        modeButtonMap.put(SequencerInterface.Mode.CLEAR, Button.DOWN);
-        modeButtonMap.put(SequencerInterface.Mode.PATTERN_EDIT, Button.UP);
+        modeButtonMap.put(SequencerInterface.Mode.PATTERN_EDIT, Button.at(Top, 0));
 
         modePadMap.put(SequencerInterface.Mode.TRACK_MUTE, Pad.at(0, MODE_ROW));
         modePadMap.put(SequencerInterface.Mode.TRACK_EDIT, Pad.at(1, MODE_ROW));
@@ -66,9 +65,9 @@ public class LaunchpadUtil {
 
     public static Map<SequencerInterface.Switch, Pad> switchPadMap = Maps.newHashMap();
     static {
-        switchPadMap.put(SequencerInterface.Switch.INTERNAL_CLOCK_ENABLED, Pad.at(5,SWITCHES_ROW));
-        switchPadMap.put(SequencerInterface.Switch.MIDI_CLOCK_ENABLED, Pad.at(6,SWITCHES_ROW));
-        switchPadMap.put(SequencerInterface.Switch.TRIGGER_ENABLED, Pad.at(7,SWITCHES_ROW));
+        switchPadMap.put(SequencerInterface.Switch.INTERNAL_CLOCK_ENABLED, Pad.at(5, SWITCHES_ROW));
+        switchPadMap.put(SequencerInterface.Switch.MIDI_CLOCK_ENABLED, Pad.at(6, SWITCHES_ROW));
+        switchPadMap.put(SequencerInterface.Switch.TRIGGER_ENABLED, Pad.at(7, SWITCHES_ROW));
     }
 
 

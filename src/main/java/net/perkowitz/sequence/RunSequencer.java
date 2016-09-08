@@ -1,7 +1,8 @@
 package net.perkowitz.sequence;
 
-import net.perkowitz.sequence.launchpad.LaunchpadController;
-import net.perkowitz.sequence.launchpad.LaunchpadDisplay;
+import net.perkowitz.sequence.devices.launchpad.LaunchpadController;
+import net.perkowitz.sequence.devices.launchpad.LaunchpadDisplay;
+import net.perkowitz.sequence.devices.launchpadpro.*;
 import net.perkowitz.sequence.models.Memory;
 import net.perkowitz.sequence.models.Pattern;
 import net.perkowitz.sequence.models.Session;
@@ -9,11 +10,11 @@ import net.thecodersbreakfast.lp4j.api.Launchpad;
 import net.thecodersbreakfast.lp4j.api.LaunchpadClient;
 import net.thecodersbreakfast.lp4j.midi.MidiDeviceConfiguration;
 import net.thecodersbreakfast.lp4j.midi.MidiLaunchpad;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.sound.midi.MidiDevice;
 import javax.sound.midi.MidiUnavailableException;
 import java.io.*;
-import java.util.List;
 import java.util.Properties;
 
 
@@ -54,12 +55,12 @@ public class RunSequencer {
         String[] controllerNames = properties.getProperty(CONTROLLER_NAME_PROPERTY).split(",");
         MidiDevice controllerInput = MidiUtil.findMidiDevice(controllerNames, false, true);
         if (controllerInput == null) {
-            System.err.printf("Unable to find controller input device matching name: %s\n", controllerNames);
+            System.err.printf("Unable to find controller input device matching name: %s\n", StringUtils.join(controllerNames, ","));
             System.exit(1);
         }
         MidiDevice controllerOutput = MidiUtil.findMidiDevice(controllerNames, true, false);
         if (controllerOutput == null) {
-            System.err.printf("Unable to find controller output device matching name: %s\n", controllerNames);
+            System.err.printf("Unable to find controller output device matching name: %s\n", StringUtils.join(controllerNames, ","));
             System.exit(1);
         }
 
@@ -68,7 +69,7 @@ public class RunSequencer {
         String[] inputNames = properties.getProperty(INPUT_NAME_PROPERTY).split(",");
         MidiDevice midiInput = MidiUtil.findMidiDevice(inputNames, false, true);
         if (midiInput == null) {
-            System.err.printf("Unable to find sequence output device matching name: %s\n", inputNames);
+            System.err.printf("Unable to find sequencer output device matching name: %s\n", StringUtils.join(inputNames, ","));
             System.exit(1);
         }
 
@@ -77,7 +78,7 @@ public class RunSequencer {
         String[] outputNames = properties.getProperty(SEQUENCE_NAME_PROPERTY).split(",");
         MidiDevice sequenceOutput = MidiUtil.findMidiDevice(outputNames, true, false);
         if (sequenceOutput == null) {
-            System.err.printf("Unable to find sequence output device matching name: %s\n", outputNames);
+            System.err.printf("Unable to find sequencer output device matching name: %s\n", StringUtils.join(outputNames, ","));
             System.exit(1);
         }
 
@@ -88,6 +89,23 @@ public class RunSequencer {
             SequencerDisplay launchpadDisplay = new LaunchpadDisplay(launchpadClient);
             LaunchpadController launchpadController = new LaunchpadController();
             launchpad.setListener(launchpadController);
+
+            String[] altNames = new String[] { "Launchpad", "Standalone" };
+            MidiDevice altOutput = MidiUtil.findMidiDevice(altNames, true, false);
+            MidiDevice altInput = MidiUtil.findMidiDevice(altNames, false, true);
+            if (altOutput != null && altInput != null) {
+                System.out.printf("Found LPP alternate\n");
+                altInput.open();
+                altOutput.open();
+                LaunchpadProController launchpadProController = new LaunchpadProController();
+                LaunchpadPro launchpadPro = new LaunchpadPro(altInput.getTransmitter(), altOutput.getReceiver(), null);
+                launchpadPro.initialize();
+                launchpadPro.setPads(Sprites.hachi, Color.BRIGHT_ORANGE);
+                SequencerDisplay altDisplay = new LaunchpadProDisplay(launchpadPro);
+                SequencerDisplay multiDisplay = new MultiDisplay(new SequencerDisplay[] { launchpadDisplay, altDisplay });
+                launchpadDisplay = multiDisplay;
+
+            }
 
             Sequencer sequencer = new Sequencer(launchpadController, launchpadDisplay, midiInput, sequenceOutput);
 

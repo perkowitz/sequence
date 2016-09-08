@@ -1,4 +1,4 @@
-package net.perkowitz.sequence.launchpad;
+package net.perkowitz.sequence.devices.launchpad;
 
 import com.google.common.collect.Sets;
 import net.perkowitz.sequence.SequencerController;
@@ -7,11 +7,9 @@ import net.thecodersbreakfast.lp4j.api.Button;
 import net.thecodersbreakfast.lp4j.api.LaunchpadListenerAdapter;
 import net.thecodersbreakfast.lp4j.api.Pad;
 
-import java.util.Arrays;
 import java.util.Set;
 
-import static net.perkowitz.sequence.SequencerInterface.SETTINGS_MODULE_MODES;
-import static net.perkowitz.sequence.launchpad.LaunchpadUtil.*;
+import static net.perkowitz.sequence.devices.launchpad.LaunchpadUtil.*;
 
 /**
  * Created by mperkowi on 7/15/16.
