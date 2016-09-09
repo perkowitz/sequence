@@ -113,7 +113,7 @@ public class RunSequencer {
             launchpadPro.setPads(Sprites.issho, Color.WHITE);
             Thread.sleep(1000);
             launchpadPro.setPads(Sprites.issho, Color.OFF);
-            launchpadPro.setPads(Sprites.hachi, Color.BRIGHT_ORANGE);
+            launchpadPro.setPads(Sprites.hachi, Color.LIGHT_BLUE);
             Thread.sleep(500);
             sequencerDisplay = new LaunchpadProDisplay(launchpadPro);
 

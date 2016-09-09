@@ -319,9 +319,9 @@ public class LaunchpadProDisplay implements SequencerDisplay {
 
         Color color = LaunchpadProUtil.COLOR_STEP_ON;
         if (valueMode == SequencerInterface.ValueMode.TEMPO) {
-            color = LaunchpadProUtil.COLOR_PATTERN_PLAYING;
+            color = LaunchpadProUtil.COLOR_STEP_PLAYING;
         } else if (valueMode == SequencerInterface.ValueMode.FILL_PERCENT) {
-            color = LaunchpadProUtil.COLOR_PATTERN_SELECTED;
+            color = LaunchpadProUtil.COLOR_PATTERN;
         }
 
         for (int b = 0; b < 8; b++) {

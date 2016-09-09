@@ -35,7 +35,7 @@ public class LaunchpadProUtil {
 
     // display colors
     public static Color COLOR_STEP = Color.OFF;
-    public static Color COLOR_STEP_ON = Color.WHITE;
+    public static Color COLOR_STEP_ON = Color.MED_GRAY;
     public static Color COLOR_STEP_PLAYING = Color.BRIGHT_GREEN;
 
     public static Color COLOR_TRACK = Color.DARK_GRAY;
@@ -47,9 +47,9 @@ public class LaunchpadProUtil {
 
     public static Color COLOR_PATTERN = Color.DIM_BLUE;
     public static Color COLOR_PATTERN_SELECTED = Color.WHITE;
-    public static Color COLOR_PATTERN_PLAYING = Color.LIGHT_BLUE;
+    public static Color COLOR_PATTERN_PLAYING = Color.DIM_GREEN;
     public static Color COLOR_PATTERN_CHAINED = Color.DARK_GRAY;
-    public static Color COLOR_PATTERN_SELECTED_PLAYING = Color.WHITE;
+    public static Color COLOR_PATTERN_SELECTED_PLAYING = Color.BRIGHT_GREEN;
 
     public static Color COLOR_MODE_ACTIVE = Color.LIGHT_BLUE;
     public static Color COLOR_MODE_INACTIVE = Color.DARK_BLUE;
