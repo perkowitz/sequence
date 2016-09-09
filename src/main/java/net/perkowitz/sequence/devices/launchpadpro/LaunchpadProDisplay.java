@@ -9,7 +9,7 @@ import java.util.Map;
 
 import static net.perkowitz.sequence.SequencerInterface.Mode.EXIT;
 import static net.perkowitz.sequence.SequencerInterface.SETTINGS_MODULE_MODES;
-import static net.perkowitz.sequence.devices.launchpadpro.Button.Side.Right;
+import static net.perkowitz.sequence.devices.GridButton.Side.Right;
 import static net.perkowitz.sequence.devices.launchpadpro.LaunchpadProUtil.*;
 
 /**
@@ -54,7 +54,7 @@ public class LaunchpadProDisplay implements SequencerDisplay {
     public void displayHelp() {
 
         // pattern buttons are green
-        Color patternColor = LaunchpadProUtil.COLOR_PLAYING_DIM;
+        Color patternColor = LaunchpadProUtil.COLOR_PATTERN;
         for (int y = LaunchpadProUtil.PATTERNS_MIN_ROW; y <= LaunchpadProUtil.PATTERNS_MAX_ROW; y++) {
             for (int x = 0; x < 8; x++) {
                 launchpadPro.setPad(Pad.at(x, y), patternColor);
@@ -69,7 +69,7 @@ public class LaunchpadProDisplay implements SequencerDisplay {
         launchpadPro.setPad(modePadMap.get(SequencerInterface.Mode.TRACK_EDIT), patternColor);
 
         // track buttons are orange
-        Color trackColor = LaunchpadProUtil.COLOR_SELECTED_DIM;
+        Color trackColor = LaunchpadProUtil.COLOR_PATTERN_SELECTED;
         for (int y = LaunchpadProUtil.TRACKS_MIN_ROW; y <= LaunchpadProUtil.TRACKS_MAX_ROW; y++) {
             for (int x = 0; x < 8; x++) {
                 launchpadPro.setPad(Pad.at(x, y), trackColor);
@@ -79,7 +79,7 @@ public class LaunchpadProDisplay implements SequencerDisplay {
         launchpadPro.setPad(modePadMap.get(SequencerInterface.Mode.TRACK_EDIT), trackColor);
 
         // step buttons are red
-        Color stepColor = LaunchpadProUtil.COLOR_DISABLED;
+        Color stepColor = LaunchpadProUtil.COLOR_TRACK;
         for (int y = STEPS_MIN_ROW; y <= LaunchpadProUtil.STEPS_MAX_ROW; y++) {
             for (int x = 0; x < 8; x++) {
                 launchpadPro.setPad(Pad.at(x, y), stepColor);
@@ -124,11 +124,11 @@ public class LaunchpadProDisplay implements SequencerDisplay {
         int x = getX(session.getIndex());
         int y = LaunchpadProUtil.PATTERNS_MIN_ROW + getY(session.getIndex());
 
-        Color color = LaunchpadProUtil.COLOR_SELECTED_DIM;
+        Color color = LaunchpadProUtil.COLOR_PATTERN;
         if (session.isSelected()) {
-            color = LaunchpadProUtil.COLOR_SELECTED;
+            color = LaunchpadProUtil.COLOR_PATTERN_SELECTED;
         } else if (session.isNext()) {
-            color = LaunchpadProUtil.COLOR_DISABLED;
+            color = LaunchpadProUtil.COLOR_PATTERN_CHAINED;
         }
         launchpadPro.setPad(Pad.at(x, y), color);
 
@@ -136,14 +136,13 @@ public class LaunchpadProDisplay implements SequencerDisplay {
 
     public void displayFiles(int currentFileIndex) {
 
-        // load buttons are green; save buttons are red
         for (int x = 0; x < 8; x++) {
             if (x == currentFileIndex) {
-                launchpadPro.setPad(Pad.at(x, LOAD_ROW), LaunchpadProUtil.COLOR_PLAYING);
-                launchpadPro.setPad(Pad.at(x, SAVE_ROW), LaunchpadProUtil.COLOR_ENABLED);
+                launchpadPro.setPad(Pad.at(x, LOAD_ROW), LaunchpadProUtil.COLOR_PATTERN_PLAYING);
+                launchpadPro.setPad(Pad.at(x, SAVE_ROW), LaunchpadProUtil.COLOR_TRACK_SELECTED);
             } else {
-                launchpadPro.setPad(Pad.at(x, LOAD_ROW), LaunchpadProUtil.COLOR_PLAYING_DIM);
-                launchpadPro.setPad(Pad.at(x, SAVE_ROW), LaunchpadProUtil.COLOR_DISABLED);
+                launchpadPro.setPad(Pad.at(x, LOAD_ROW), LaunchpadProUtil.COLOR_PATTERN);
+                launchpadPro.setPad(Pad.at(x, SAVE_ROW), LaunchpadProUtil.COLOR_TRACK);
             }
         }
 
@@ -161,15 +160,15 @@ public class LaunchpadProDisplay implements SequencerDisplay {
         }
 
 
-        Color color = COLOR_PLAYING_DIM;
+        Color color = COLOR_PATTERN;
         if (pattern.isSelected() && pattern.isPlaying()) {
-            color = COLOR_SELECTED;
+            color = COLOR_PATTERN_SELECTED_PLAYING;
         } else if (pattern.isSelected()) {
-            color = COLOR_SELECTED_DIM;
+            color = COLOR_PATTERN_SELECTED;
         } else if (pattern.isPlaying())  {
-            color = COLOR_PLAYING;
+            color = COLOR_PATTERN_PLAYING;
         } else if (pattern.isChained())  {
-            color = COLOR_DISABLED;
+            color = COLOR_PATTERN_CHAINED;
         }
 //        System.out.printf("displayPattern: %s, x=%d, y=%d, sel=%s, play=%s, chained=%s, color=%d,%d\n",
 //                pattern, x, y, pattern.isSelected(), pattern.isPlaying(), pattern.isChained(),
@@ -206,15 +205,15 @@ public class LaunchpadProDisplay implements SequencerDisplay {
 //        }
         if (track.isPlaying()) {
             if (track.isEnabled()) {
-                launchpadPro.setPad(Pad.at(x, y), LaunchpadProUtil.COLOR_PLAYING);
+                launchpadPro.setPad(Pad.at(x, y), LaunchpadProUtil.COLOR_TRACK_PLAYING);
             } else {
-                launchpadPro.setPad(Pad.at(x, y), LaunchpadProUtil.COLOR_SELECTED_DIM);
+                launchpadPro.setPad(Pad.at(x, y), LaunchpadProUtil.COLOR_TRACK_MUTED_PLAYING);
             }
         } else if (track.isSelected()) {
             if (track.isEnabled()) {
-                launchpadPro.setPad(Pad.at(x, y), LaunchpadProUtil.COLOR_SELECTED);
+                launchpadPro.setPad(Pad.at(x, y), LaunchpadProUtil.COLOR_TRACK_SELECTED);
             } else {
-                launchpadPro.setPad(Pad.at(x, y), LaunchpadProUtil.COLOR_SELECTED_DIM);
+                launchpadPro.setPad(Pad.at(x, y), LaunchpadProUtil.COLOR_TRACK_MUTED_SELECTED);
             }
             if (displaySteps) {
                 for (int i = 0; i < Track.getStepCount(); i++) {
@@ -223,9 +222,9 @@ public class LaunchpadProDisplay implements SequencerDisplay {
             }
         } else {
             if (track.isEnabled()) {
-                launchpadPro.setPad(Pad.at(x, y), LaunchpadProUtil.COLOR_DISABLED);
+                launchpadPro.setPad(Pad.at(x, y), LaunchpadProUtil.COLOR_TRACK);
             } else {
-                launchpadPro.setPad(Pad.at(x, y), LaunchpadProUtil.COLOR_EMPTY);
+                launchpadPro.setPad(Pad.at(x, y), LaunchpadProUtil.COLOR_TRACK_MUTED);
             }
         }
     }
@@ -241,9 +240,9 @@ public class LaunchpadProDisplay implements SequencerDisplay {
 //            launchpadPro.setPad(Pad.at(x, y), COLOR_SELECTED);
 //        } else if (step.isOn()) {
         if (step.isOn()) {
-            launchpadPro.setPad(Pad.at(x, y), COLOR_ENABLED);
+            launchpadPro.setPad(Pad.at(x, y), COLOR_STEP_ON);
         } else {
-            launchpadPro.setPad(Pad.at(x, y), LaunchpadProUtil.COLOR_EMPTY);
+            launchpadPro.setPad(Pad.at(x, y), LaunchpadProUtil.COLOR_STEP);
         }
     }
 
@@ -256,7 +255,7 @@ public class LaunchpadProDisplay implements SequencerDisplay {
 //            displayStep(step);
             int x = getX(index);
             int y = STEPS_MIN_ROW + getY(index);
-            launchpadPro.setPad(Pad.at(x, y), LaunchpadProUtil.COLOR_EMPTY);
+            launchpadPro.setPad(Pad.at(x, y), LaunchpadProUtil.COLOR_STEP);
         }
     }
 
@@ -266,7 +265,7 @@ public class LaunchpadProDisplay implements SequencerDisplay {
 
         int x = getX(stepNumber);
         int y = STEPS_MIN_ROW + getY(stepNumber);
-        launchpadPro.setPad(Pad.at(x, y), COLOR_PLAYING);
+        launchpadPro.setPad(Pad.at(x, y), COLOR_STEP_PLAYING);
     }
 
     public void displayMode(SequencerInterface.Mode mode, boolean isActive) {
@@ -279,9 +278,9 @@ public class LaunchpadProDisplay implements SequencerDisplay {
             return;
         }
 
-        Color color = COLOR_DISABLED;// Color.of(2,1);
+        Color color = COLOR_MODE_INACTIVE;// Color.of(2,1);
         if (isActive) {
-            color = COLOR_PLAYING;
+            color = COLOR_MODE_ACTIVE;
         }
 
         if (modeButtonMap.get(mode) != null) {
@@ -310,7 +309,7 @@ public class LaunchpadProDisplay implements SequencerDisplay {
 
     public void clearValue() {
         for (int b = 0; b < 8; b++) {
-            launchpadPro.setButton(Button.at(Right, 7-b), COLOR_EMPTY);
+            launchpadPro.setButton(Button.at(Right, 7-b), COLOR_VALUE);
         }
     }
 
@@ -318,15 +317,15 @@ public class LaunchpadProDisplay implements SequencerDisplay {
 
         int buttons = 8 * (value - minValue) / (maxValue - minValue);
 
-        Color color = LaunchpadProUtil.COLOR_DISABLED;
+        Color color = LaunchpadProUtil.COLOR_STEP_ON;
         if (valueMode == SequencerInterface.ValueMode.TEMPO) {
-            color = LaunchpadProUtil.COLOR_PLAYING;
+            color = LaunchpadProUtil.COLOR_PATTERN_PLAYING;
         } else if (valueMode == SequencerInterface.ValueMode.FILL_PERCENT) {
-            color = LaunchpadProUtil.COLOR_SELECTED;
+            color = LaunchpadProUtil.COLOR_PATTERN_SELECTED;
         }
 
         for (int b = 0; b < 8; b++) {
-            Color buttonColor = LaunchpadProUtil.COLOR_EMPTY;
+            Color buttonColor = LaunchpadProUtil.COLOR_VALUE;
             if (b <= buttons) {
                 buttonColor = color;
             }
@@ -343,8 +342,8 @@ public class LaunchpadProDisplay implements SequencerDisplay {
 
         if (currentModule != SequencerInterface.Module.SETTINGS) { return; }
 
-        Color off = LaunchpadProUtil.COLOR_DISABLED;
-        Color on = LaunchpadProUtil.COLOR_PLAYING;
+        Color off = LaunchpadProUtil.COLOR_MODE_INACTIVE;
+        Color on = LaunchpadProUtil.COLOR_MODE_ACTIVE;
 
         for (SequencerInterface.Switch switchx : switches.keySet()) {
             if (switchPadMap.get(switchx) != null) {

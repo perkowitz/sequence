@@ -5,14 +5,15 @@ import net.perkowitz.sequence.SequencerInterface;
 
 import java.util.Map;
 
-import static net.perkowitz.sequence.devices.launchpadpro.Button.Side.Top;
+import static net.perkowitz.sequence.devices.GridButton.Side.Top;
+
 
 /**
  * Created by optic on 7/10/16.
  */
 public class LaunchpadProUtil {
 
-    public static boolean debugMode = false;
+    public static boolean debugMode = true;
 
     // settings module
     public static int SESSIONS_MIN_ROW = 0;
@@ -33,14 +34,27 @@ public class LaunchpadProUtil {
     public static int STEPS_MAX_ROW = 7;
 
     // display colors
-    public static Color COLOR_EMPTY = Color.OFF;
-    public static Color COLOR_ENABLED = Color.BRIGHT_RED;
-    public static Color COLOR_DISABLED = Color.DIM_BLUEGRAY;
-    public static Color COLOR_SELECTED = Color.WHITE;
-    public static Color COLOR_SELECTED_DIM = Color.MED_GRAY;
-    public static Color COLOR_PLAYING = Color.BRIGHT_GREEN;
-    public static Color COLOR_PLAYING_DIM = Color.DARK_GRAY;
-    public static Color COLOR_PLAYING_SELECTED = Color.BRIGHT_YELLOW;
+    public static Color COLOR_STEP = Color.OFF;
+    public static Color COLOR_STEP_ON = Color.WHITE;
+    public static Color COLOR_STEP_PLAYING = Color.BRIGHT_GREEN;
+
+    public static Color COLOR_TRACK = Color.DARK_GRAY;
+    public static Color COLOR_TRACK_SELECTED = Color.WHITE;
+    public static Color COLOR_TRACK_PLAYING = Color.BRIGHT_GREEN;
+    public static Color COLOR_TRACK_MUTED = Color.OFF;
+    public static Color COLOR_TRACK_MUTED_PLAYING = Color.DIM_GREEN;
+    public static Color COLOR_TRACK_MUTED_SELECTED = Color.LIGHT_GRAY;
+
+    public static Color COLOR_PATTERN = Color.DIM_BLUE;
+    public static Color COLOR_PATTERN_SELECTED = Color.WHITE;
+    public static Color COLOR_PATTERN_PLAYING = Color.LIGHT_BLUE;
+    public static Color COLOR_PATTERN_CHAINED = Color.DARK_GRAY;
+    public static Color COLOR_PATTERN_SELECTED_PLAYING = Color.WHITE;
+
+    public static Color COLOR_MODE_ACTIVE = Color.LIGHT_BLUE;
+    public static Color COLOR_MODE_INACTIVE = Color.DARK_BLUE;
+
+    public static Color COLOR_VALUE = Color.OFF;
 
     public static Map<SequencerInterface.Mode, Button> modeButtonMap = Maps.newHashMap();
     public static Map<SequencerInterface.Mode, Pad> modePadMap = Maps.newHashMap();

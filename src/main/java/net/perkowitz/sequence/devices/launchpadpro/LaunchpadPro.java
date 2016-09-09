@@ -1,5 +1,7 @@
 package net.perkowitz.sequence.devices.launchpadpro;
 
+import net.perkowitz.sequence.devices.GridListener;
+
 import javax.sound.midi.*;
 
 import static javax.sound.midi.ShortMessage.*;
@@ -15,12 +17,10 @@ public class LaunchpadPro implements Receiver {
 
     private static int CHANNEL = 0;
 
-    private Transmitter transmitter;
     private Receiver receiver;
-    private LaunchpadProListener listener;
+    private GridListener listener;
 
-    public LaunchpadPro(Transmitter transmitter, Receiver receiver, LaunchpadProListener listener) {
-        this.transmitter = transmitter;
+    public LaunchpadPro(Receiver receiver, GridListener listener) {
         this.receiver = receiver;
         this.listener = listener;
     }
@@ -97,7 +97,7 @@ public class LaunchpadPro implements Receiver {
             } else {
                 switch (command) {
                     case NOTE_ON:
-                        System.out.printf("NOTE ON: %d, %d, %d\n", shortMessage.getChannel(), shortMessage.getData1(), shortMessage.getData2());
+//                        System.out.printf("NOTE ON: %d, %d, %d\n", shortMessage.getChannel(), shortMessage.getData1(), shortMessage.getData2());
                         if (listener != null) {
                             Pad pad = Pad.fromNote(shortMessage.getData1());
                             int velocity = shortMessage.getData2();
@@ -109,14 +109,14 @@ public class LaunchpadPro implements Receiver {
                         }
                         break;
                     case NOTE_OFF:
-                        System.out.printf("NOTE OFF: %d, %d, %d\n", shortMessage.getChannel(), shortMessage.getData1(), shortMessage.getData2());
+//                        System.out.printf("NOTE OFF: %d, %d, %d\n", shortMessage.getChannel(), shortMessage.getData1(), shortMessage.getData2());
                         if (listener != null) {
                             Pad pad = Pad.fromNote(shortMessage.getData1());
                             listener.onPadReleased(pad);
                         }
                         break;
                     case CONTROL_CHANGE:
-                        System.out.printf("MIDI CC: %d, %d, %d\n", shortMessage.getChannel(), shortMessage.getData1(), shortMessage.getData2());
+//                        System.out.printf("MIDI CC: %d, %d, %d\n", shortMessage.getChannel(), shortMessage.getData1(), shortMessage.getData2());
                         if (listener != null) {
                             Button button = Button.fromCC(shortMessage.getData1());
                             int velocity = shortMessage.getData2();

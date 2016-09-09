@@ -1,11 +1,12 @@
 package net.perkowitz.sequence.devices.launchpadpro;
 
 import lombok.Getter;
+import net.perkowitz.sequence.devices.GridPad;
 
 /**
  * Created by optic on 9/3/16.
  */
-public class Pad {
+public class Pad implements GridPad {
 
     @Getter private final int x;
     @Getter private final int y;
@@ -15,6 +16,25 @@ public class Pad {
         this.x = x;
         this.y = y;
         this.note = (7-y) * 10 + x + 11;
+    }
+
+    @Override
+    public int hashCode() {
+        return this.toString().hashCode();
+    }
+
+    @Override
+    public boolean equals(Object object) {
+        if (object instanceof Pad) {
+            Pad pad = (Pad) object;
+            return this.getX() == pad.getX() && this.getY() == pad.getY();
+        }
+        return false;
+    }
+
+    @Override
+    public String toString() {
+        return "Pad:" + x + ":" + y;
     }
 
     /***** static methods ********************************/

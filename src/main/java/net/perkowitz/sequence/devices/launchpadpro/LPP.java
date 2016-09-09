@@ -37,7 +37,7 @@ public class LPP {
         lppOutput.open();
         receiver = lppOutput.getReceiver();
 
-        LaunchpadPro lpp = new LaunchpadPro(transmitter, receiver, null);
+        LaunchpadPro lpp = new LaunchpadPro(receiver, null);
 
         transmitter.setReceiver(lpp);
 
@@ -65,7 +65,7 @@ public class LPP {
 
         lpp.initialize();
 
-        palette(lpp, true);
+        palette(lpp, false);
 //        palette(lpp, Color.oranges);
 //        lpp.setPads(Sprites.hachi, Color.DIM_GREEN);
 

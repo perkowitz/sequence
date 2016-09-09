@@ -1,21 +1,16 @@
 package net.perkowitz.sequence.devices.launchpadpro;
 
 import lombok.Getter;
+import net.perkowitz.sequence.devices.GridButton;
 
-import static net.perkowitz.sequence.devices.launchpadpro.Button.Side.*;
+import static net.perkowitz.sequence.devices.GridButton.Side.*;
 
 /**
  * Created by optic on 9/3/16.
  */
-public class Button {
+public class Button implements GridButton {
 
-    public enum Side {
-        Top, Bottom, Left, Right
-    }
-
-
-
-    @Getter private final Side side;
+    @Getter private final GridButton.Side side;
     @Getter private final int index;
     @Getter private final int cc;
 
@@ -26,10 +21,10 @@ public class Button {
         int flippedIndex = 7 - index;
         switch (side) {
             case Top:
-                this.cc = 90 + flippedIndex + 1;
+                this.cc = 90 + index + 1;
                 break;
             case Bottom:
-                this.cc = flippedIndex + 1;
+                this.cc = index + 1;
                 break;
             case Left:
                 this.cc = 10 + flippedIndex * 10;
@@ -43,6 +38,25 @@ public class Button {
     }
 
 
+    @Override
+    public int hashCode() {
+        return this.toString().hashCode();
+    }
+
+    @Override
+    public boolean equals(Object object) {
+        if (object instanceof Button) {
+            Button button = (Button) object;
+            return this.getSide() == button.getSide() && this.getIndex() == button.getIndex();
+        }
+        return false;
+    }
+
+    @Override
+    public String toString() {
+        return "Button:" + side + ":" + index;
+    }
+
     /***** static methods ********************************/
 
     public static Button fromCC(int cc) {
@@ -51,14 +65,14 @@ public class Button {
         int index = 0;
 
         if (cc >= 10 && cc <= 89) {
-            index = cc / 10 - 1;
+            index = 7 - (cc / 10 - 1);
             side = (cc % 10 == 0) ? Left : Right;
         } else {
             index = cc % 10 - 1;
             side = (cc < 10) ? Bottom : Top;
         }
 
-        return new Button(side, 7 - index);
+        return new Button(side, index);
     }
 
     public static Button at(Side side, int index) {

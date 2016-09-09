@@ -3,6 +3,7 @@ package net.perkowitz.sequence;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.io.Files;
+import net.perkowitz.sequence.devices.GridListener;
 import net.perkowitz.sequence.models.*;
 import net.perkowitz.sequence.models.Track;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -19,7 +20,7 @@ import static net.perkowitz.sequence.SequencerInterface.ValueMode.VELOCITY;
 /**
  * Created by optic on 7/8/16.
  */
-public class Sequencer implements SequencerInterface  {
+public class Sequencer implements SequencerInterface {
 
     public enum StepMode { MUTE, VELOCITY, JUMP, PLAY }
     private static final int DEFAULT_TIMER = 125;
@@ -37,10 +38,8 @@ public class Sequencer implements SequencerInterface  {
 
     private SequencerController controller;
     private SequencerDisplay display;
-    private MidiDevice midiInput;
     private Transmitter inputTransmitter;
-    private MidiDevice sequenceOutput;
-    private Receiver sequenceReceiver;
+    private Receiver outputReceiver;
 
     private Map<Mode, Boolean> modeIsActiveMap = Maps.newHashMap();
     private Map<SequencerDisplay.DisplayButton, SequencerDisplay.ButtonState> buttonStateMap = Maps.newHashMap();
@@ -72,21 +71,20 @@ public class Sequencer implements SequencerInterface  {
 
     /***** constructor *********************************************************************/
 
-    public Sequencer(SequencerController controller, SequencerDisplay display, MidiDevice midiInput, MidiDevice sequenceOutput) throws Exception {
+    public Sequencer(SequencerController controller, SequencerDisplay display, Transmitter inputTransmitter, Receiver outputReceiver) throws Exception {
 
+        // set up controller and display
         this.controller = controller;
         this.controller.setSequencer(this);
         this.display = display;
 
-        this.midiInput = midiInput;
-        this.midiInput.open();
-        this.inputTransmitter = this.midiInput.getTransmitter();
-        SequencerReceiver sequencerReceiver = new SequencerReceiver(this);
-        this.inputTransmitter.setReceiver(sequencerReceiver);
+        // connect the provided midi input to the sequencer's clock receiver
+        this.inputTransmitter = inputTransmitter;
+        SequencerReceiver clockReceiver = new SequencerReceiver(this);
+        this.inputTransmitter.setReceiver(clockReceiver);
 
-        this.sequenceOutput = sequenceOutput;
-        this.sequenceOutput.open();
-        this.sequenceReceiver = this.sequenceOutput.getReceiver();
+        // where to send the sequencer's midi output
+        this.outputReceiver = outputReceiver;
 
         load(FILENAME_PREFIX + currentFileIndex + FILENAME_SUFFIX);
 
@@ -99,8 +97,8 @@ public class Sequencer implements SequencerInterface  {
         }
 
         display.initialize();
-        display.displayHelp();
-        Thread.sleep(1000);
+//        display.displayHelp();
+//        Thread.sleep(1000);
         display.displayAll(memory, modeIsActiveMap);
 
         startTimer();
@@ -110,10 +108,6 @@ public class Sequencer implements SequencerInterface  {
 
 
     /***** public interface *********************************************************************/
-
-    public void run() {
-
-    }
 
     public void selectModule(Module module) {
 
@@ -425,9 +419,7 @@ public class Sequencer implements SequencerInterface  {
 
 
     public void shutdown() {
-//        save();
         display.initialize();
-        sequenceOutput.close();
         System.exit(0);
     }
 
@@ -609,7 +601,7 @@ public class Sequencer implements SequencerInterface  {
         try {
             ShortMessage noteMessage = new ShortMessage();
             noteMessage.setMessage(ShortMessage.NOTE_ON, channel, noteNumber, velocity);
-            sequenceReceiver.send(noteMessage, -1);
+            outputReceiver.send(noteMessage, -1);
 
         } catch (InvalidMidiDataException e) {
             System.err.println(e);
