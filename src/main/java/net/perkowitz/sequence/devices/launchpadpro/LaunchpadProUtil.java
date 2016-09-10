@@ -13,7 +13,7 @@ import static net.perkowitz.sequence.devices.GridButton.Side.Top;
  */
 public class LaunchpadProUtil {
 
-    public static boolean debugMode = true;
+    public static boolean debugMode = false;
 
     // settings module
     public static int SESSIONS_MIN_ROW = 0;

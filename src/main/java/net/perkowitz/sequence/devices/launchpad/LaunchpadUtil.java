@@ -13,7 +13,7 @@ import java.util.Map;
  */
 public class LaunchpadUtil {
 
-    public static boolean debugMode = true;
+    public static boolean debugMode = false;
 
     // settings module
     public static int SESSIONS_MIN_ROW = 0;
