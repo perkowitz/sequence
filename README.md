@@ -17,7 +17,7 @@ but should be adaptable to other hardware.
 ### Version 1.0
 
 ####
-- Released
+- Released 9/9/2016
 - Added support for Launchpad Pro
 - Some refactoring of Sequencer, RunSequencer, other classes to support both Launchpads
 - [List open V1.1 issues](https://github.com/perkowitz/sequence/issues?q=is%3Aopen+is%3Aissue+milestone%3AV1.1)
