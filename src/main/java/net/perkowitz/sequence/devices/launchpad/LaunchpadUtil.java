@@ -1,4 +1,4 @@
-package net.perkowitz.sequence.launchpad;
+package net.perkowitz.sequence.devices.launchpad;
 
 import com.google.common.collect.Maps;
 import net.perkowitz.sequence.SequencerInterface;

@@ -3,6 +3,7 @@ package net.perkowitz.sequence;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.io.Files;
+import net.perkowitz.sequence.devices.GridListener;
 import net.perkowitz.sequence.models.*;
 import net.perkowitz.sequence.models.Track;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -19,7 +20,7 @@ import static net.perkowitz.sequence.SequencerInterface.ValueMode.VELOCITY;
 /**
  * Created by optic on 7/8/16.
  */
-public class Sequencer implements SequencerInterface  {
+public class Sequencer implements SequencerInterface {
 
     public enum StepMode { MUTE, VELOCITY, JUMP, PLAY }
     private static final int DEFAULT_TIMER = 125;
@@ -37,10 +38,8 @@ public class Sequencer implements SequencerInterface  {
 
     private SequencerController controller;
     private SequencerDisplay display;
-    private MidiDevice midiInput;
     private Transmitter inputTransmitter;
-    private MidiDevice sequenceOutput;
-    private Receiver sequenceReceiver;
+    private Receiver outputReceiver;
 
     private Map<Mode, Boolean> modeIsActiveMap = Maps.newHashMap();
     private Map<SequencerDisplay.DisplayButton, SequencerDisplay.ButtonState> buttonStateMap = Maps.newHashMap();
@@ -72,21 +71,20 @@ public class Sequencer implements SequencerInterface  {
 
     /***** constructor *********************************************************************/
 
-    public Sequencer(SequencerController controller, SequencerDisplay display, MidiDevice midiInput, MidiDevice sequenceOutput) throws Exception {
+    public Sequencer(SequencerController controller, SequencerDisplay display, Transmitter inputTransmitter, Receiver outputReceiver) throws Exception {
 
+        // set up controller and display
         this.controller = controller;
         this.controller.setSequencer(this);
         this.display = display;
 
-        this.midiInput = midiInput;
-        this.midiInput.open();
-        this.inputTransmitter = this.midiInput.getTransmitter();
-        SequencerReceiver sequencerReceiver = new SequencerReceiver(this);
-        this.inputTransmitter.setReceiver(sequencerReceiver);
+        // connect the provided midi input to the sequencer's clock receiver
+        this.inputTransmitter = inputTransmitter;
+        SequencerReceiver clockReceiver = new SequencerReceiver(this);
+        this.inputTransmitter.setReceiver(clockReceiver);
 
-        this.sequenceOutput = sequenceOutput;
-        this.sequenceOutput.open();
-        this.sequenceReceiver = this.sequenceOutput.getReceiver();
+        // where to send the sequencer's midi output
+        this.outputReceiver = outputReceiver;
 
         load(FILENAME_PREFIX + currentFileIndex + FILENAME_SUFFIX);
 
@@ -99,8 +97,8 @@ public class Sequencer implements SequencerInterface  {
         }
 
         display.initialize();
-        display.displayHelp();
-        Thread.sleep(1000);
+//        display.displayHelp();
+//        Thread.sleep(1000);
         display.displayAll(memory, modeIsActiveMap);
 
         startTimer();
@@ -205,7 +203,6 @@ public class Sequencer implements SequencerInterface  {
             valueMode = FILL_PERCENT;
             display.displayValue(fillPercent, FILL_PERCENT_MIN, FILL_PERCENT_MAX, FILL_PERCENT);
 
-
         } else {
             FillPattern fill = memory.selectedSession().getFill(index);
             fill.setChained(!fill.isChained());
@@ -217,18 +214,21 @@ public class Sequencer implements SequencerInterface  {
     public void selectTrack(int index) {
 
         Track track = memory.selectedPattern().getTrack(index);
-//        System.out.printf("selectTrack: %d, %s\n", index, track);
+//        System.out.printf("selectTrack: %s, patt=%s\n", track, memory.selectedPattern());
         if (trackSelectMode) {
             // unselect the currently selected track
+//            System.out.printf("- Selecting track: %d, %s\n", index, track);
             Track currentTrack = memory.selectedTrack();
+//            System.out.printf("- Unselecting track: %d, %s\n", currentTrack.getIndex(), currentTrack);
             memory.select(track);
-            display.displayTrack(currentTrack);
-            display.displayTrack(track);
+            display.displayTrack(currentTrack, true);
+            display.displayTrack(track, true);
 
         } else {
             // toggle track enabled
             track.setEnabled(!track.isEnabled());
             display.displayTrack(track);
+//            System.out.printf("- Toggling track: %d, %s, enab=%s\n", index, track, track.isEnabled());
 
         }
 
@@ -243,12 +243,14 @@ public class Sequencer implements SequencerInterface  {
             step.setOn(!step.isOn());
             memory.select(step);
             display.displayStep(step);
+            valueMode = VELOCITY;
             display.displayValue(step.getVelocity(), VELOCITY_MIN, VELOCITY_MAX, ValueMode.VELOCITY);
         } else if (stepMode == StepMode.JUMP) {
             setNextStepIndex(index);
             nextStepIndex = (index + net.perkowitz.sequence.models.Track.getStepCount()) % net.perkowitz.sequence.models.Track.getStepCount();
         } else if (stepMode == StepMode.VELOCITY) {
             memory.select(step);
+            valueMode = VELOCITY;
             display.displayValue(step.getVelocity(), VELOCITY_MIN, VELOCITY_MAX, ValueMode.VELOCITY);
         } else if (stepMode == StepMode.PLAY) {
             net.perkowitz.sequence.models.Track track = memory.selectedPattern().getTrack(index);
@@ -417,9 +419,7 @@ public class Sequencer implements SequencerInterface  {
 
 
     public void shutdown() {
-//        save();
         display.initialize();
-        sequenceOutput.close();
         System.exit(0);
     }
 
@@ -431,10 +431,14 @@ public class Sequencer implements SequencerInterface  {
         playing = setToPlaying;
         if (playing) {
             display.displayMode(Mode.PLAY, true);
+            startTimer();
         } else {
             display.displayMode(Mode.PLAY, false);
             totalStepCount = 0;
             totalMeasureCount = 0;
+            if (timer != null) {
+                timer.cancel();
+            }
         }
         nextStepIndex = 0;
         memory.resetPatternChainIndex();
@@ -597,7 +601,7 @@ public class Sequencer implements SequencerInterface  {
         try {
             ShortMessage noteMessage = new ShortMessage();
             noteMessage.setMessage(ShortMessage.NOTE_ON, channel, noteNumber, velocity);
-            sequenceReceiver.send(noteMessage, -1);
+            outputReceiver.send(noteMessage, -1);
 
         } catch (InvalidMidiDataException e) {
             System.err.println(e);

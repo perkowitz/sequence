@@ -1,22 +1,20 @@
-package net.perkowitz.sequence.launchpad;
+package net.perkowitz.sequence.devices.launchpadpro;
 
 import com.google.common.collect.Sets;
 import net.perkowitz.sequence.SequencerController;
 import net.perkowitz.sequence.SequencerInterface;
-import net.thecodersbreakfast.lp4j.api.Button;
-import net.thecodersbreakfast.lp4j.api.LaunchpadListenerAdapter;
-import net.thecodersbreakfast.lp4j.api.Pad;
+import net.perkowitz.sequence.devices.GridButton;
+import net.perkowitz.sequence.devices.GridListener;
+import net.perkowitz.sequence.devices.GridPad;
 
-import java.util.Arrays;
 import java.util.Set;
 
-import static net.perkowitz.sequence.SequencerInterface.SETTINGS_MODULE_MODES;
-import static net.perkowitz.sequence.launchpad.LaunchpadUtil.*;
+import static net.perkowitz.sequence.devices.launchpadpro.LaunchpadProUtil.*;
 
 /**
  * Created by mperkowi on 7/15/16.
  */
-public class LaunchpadController extends LaunchpadListenerAdapter implements SequencerController {
+public class LaunchpadProController implements SequencerController, GridListener {
 
     private SequencerInterface sequencer = null;
 
@@ -25,15 +23,14 @@ public class LaunchpadController extends LaunchpadListenerAdapter implements Seq
 
     private SequencerInterface.Module currentModule = SequencerInterface.Module.SEQUENCE;
 
-    public LaunchpadController() {
+    public LaunchpadProController() {
     }
 
     public void setSequencer(SequencerInterface sequencer) {
         this.sequencer = sequencer;
     }
 
-    @Override
-    public void onPadPressed(Pad pad, long timestamp) {
+    public void onPadPressed(GridPad pad, int velocity) {
 
 //        System.out.printf("onPadPressed: %s, %s\n", pad, timestamp);
 
@@ -119,8 +116,8 @@ public class LaunchpadController extends LaunchpadListenerAdapter implements Seq
     }
 
 
-    @Override
-    public void onPadReleased(Pad pad, long timestamp) {
+    
+    public void onPadReleased(GridPad pad) {
 
 //        System.out.printf("onPadReleased: %s, %s\n", pad, timestamp);
 
@@ -163,15 +160,15 @@ public class LaunchpadController extends LaunchpadListenerAdapter implements Seq
         }
     }
 
-    @Override
-    public void onButtonPressed(Button button, long timestamp) {
+    
+    public void onButtonPressed(GridButton button, int velocity) {
 
         // buttons that are available in all modules
         if (button.equals(modeButtonMap.get(SequencerInterface.Mode.PLAY))) {
             sequencer.selectMode(SequencerInterface.Mode.PLAY);
 
         } else if (button.equals(modeButtonMap.get(SequencerInterface.Mode.EXIT))) {
-            if (LaunchpadUtil.debugMode) {
+            if (LaunchpadProUtil.debugMode) {
                 sequencer.selectMode(SequencerInterface.Mode.EXIT);
             }
 
@@ -183,9 +180,9 @@ public class LaunchpadController extends LaunchpadListenerAdapter implements Seq
             currentModule = SequencerInterface.Module.SETTINGS;
             sequencer.selectModule(SequencerInterface.Module.SETTINGS);
 
-        } else if (button.isRightButton()) {
+        } else if (button.getSide() == GridButton.Side.Right) {
             // pressing one of the value buttons
-            int index = 7 - button.getCoordinate();
+            int index = 7 - button.getIndex();
             sequencer.selectValue(index);
 
         } else if (currentModule == SequencerInterface.Module.SEQUENCE) {
@@ -206,8 +203,8 @@ public class LaunchpadController extends LaunchpadListenerAdapter implements Seq
 
     }
 
-    @Override
-    public void onButtonReleased(Button button, long timestamp) {
+    
+    public void onButtonReleased(GridButton button) {
 
         if (button.equals(modeButtonMap.get(SequencerInterface.Mode.PATTERN_EDIT))) {
             sequencer.selectMode(SequencerInterface.Mode.PATTERN_PLAY);
