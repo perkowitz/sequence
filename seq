@@ -1,3 +1,3 @@
 #!/bin/sh
 
-java -cp target/sequence-1.1-shaded.jar net.perkowitz.sequence.RunSequencer sample.properties
+java -cp target/sequence-1.1-shaded.jar net.perkowitz.sequence.RunSequencer launchpadpro.properties
