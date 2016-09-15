@@ -56,7 +56,7 @@ public class RunSequencer {
 
         // find the controller midi device
         System.out.println("Finding controller device..");
-        String[] controllerNames = properties.getProperty(CONTROLLER_NAME_PROPERTY).split(",");
+        String[] controllerNames = properties.getProperty(CONTROLLER_NAME_PROPERTY).split("/");
         MidiDevice controllerInput = MidiUtil.findMidiDevice(controllerNames, false, true);
         if (controllerInput == null) {
             System.err.printf("Unable to find controller input device matching name: %s\n", StringUtils.join(controllerNames, ","));
@@ -70,7 +70,7 @@ public class RunSequencer {
 
         // find the midi device for clock input
         System.out.println("Finding input device..");
-        String[] inputNames = properties.getProperty(INPUT_NAME_PROPERTY).split(",");
+        String[] inputNames = properties.getProperty(INPUT_NAME_PROPERTY).split("/");
         MidiDevice midiInput = MidiUtil.findMidiDevice(inputNames, false, true);
         if (midiInput == null) {
             System.err.printf("Unable to find midi input device matching name: %s\n", StringUtils.join(inputNames, ","));
@@ -79,7 +79,7 @@ public class RunSequencer {
 
         // find the midi device for sequencer output
         System.out.println("Finding output device..");
-        String[] outputNames = properties.getProperty(SEQUENCE_NAME_PROPERTY).split(",");
+        String[] outputNames = properties.getProperty(SEQUENCE_NAME_PROPERTY).split("/");
         MidiDevice midiOutput = MidiUtil.findMidiDevice(outputNames, true, false);
         if (midiOutput == null) {
             System.err.printf("Unable to find midi output device matching name: %s\n", StringUtils.join(outputNames, ","));

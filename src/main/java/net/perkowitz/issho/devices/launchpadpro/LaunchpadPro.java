@@ -1,13 +1,14 @@
-package net.perkowitz.sequence.devices.launchpadpro;
+package net.perkowitz.issho.devices.launchpadpro;
 
 
-import net.perkowitz.sequence.devices.GridListener;
+import net.perkowitz.issho.devices.GridListener;
 
-import javax.sound.midi.*;
+import javax.sound.midi.InvalidMidiDataException;
+import javax.sound.midi.MidiMessage;
+import javax.sound.midi.Receiver;
+import javax.sound.midi.ShortMessage;
 
 import static javax.sound.midi.ShortMessage.*;
-import static javax.sound.midi.ShortMessage.CONTROL_CHANGE;
-import static javax.sound.midi.ShortMessage.NOTE_OFF;
 
 /**
  * Created by optic on 9/3/16.
@@ -32,10 +33,10 @@ public class LaunchpadPro implements Receiver {
     public void initialize(Color color, boolean doButtons) {
         for (int y = 0; y < 8; y++) {
             for (int x = 0; x < 8; x++) {
-                setPad(new net.perkowitz.sequence.devices.launchpadpro.Pad(x, y), color);
+                setPad(new Pad(x, y), color);
                 if (doButtons) {
-                    setButton(new Button(net.perkowitz.sequence.devices.launchpadpro.Button.Side.Top, x), color);
-                    setButton(new Button(net.perkowitz.sequence.devices.launchpadpro.Button.Side.Bottom, x), color);
+                    setButton(new Button(Button.Side.Top, x), color);
+                    setButton(new Button(Button.Side.Bottom, x), color);
                 }
             }
             if (doButtons) {
