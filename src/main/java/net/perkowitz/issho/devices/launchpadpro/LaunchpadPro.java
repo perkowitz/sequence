@@ -1,7 +1,7 @@
 package net.perkowitz.issho.devices.launchpadpro;
 
 
-import net.perkowitz.issho.devices.GridListener;
+import net.perkowitz.issho.devices.*;
 
 import javax.sound.midi.InvalidMidiDataException;
 import javax.sound.midi.MidiMessage;
@@ -13,7 +13,7 @@ import static javax.sound.midi.ShortMessage.*;
 /**
  * Created by optic on 9/3/16.
  */
-public class LaunchpadPro implements Receiver {
+public class LaunchpadPro implements Receiver, GridDisplay {
 
     private static int MIDI_REALTIME_COMMAND = 0xF0;
 
@@ -61,12 +61,14 @@ public class LaunchpadPro implements Receiver {
         }
     }
 
-    public void setPad(Pad pad, Color color) {
-        note(CHANNEL, pad.getNote(), color.getIndex());
+    public void setPad(GridPad pad, GridColor color) {
+        Pad lppPad = (Pad) pad;
+        note(CHANNEL, lppPad.getNote(), color.getIndex());
     }
 
-    public void setButton(Button button, Color color) {
-        cc(CHANNEL, button.getCc(), color.getIndex());
+    public void setButton(GridButton button, GridColor color) {
+        Button lppButton = (Button) button;
+        cc(CHANNEL, lppButton.getCc(), color.getIndex());
     }
 
 

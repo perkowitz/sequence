@@ -1,11 +1,12 @@
 package net.perkowitz.issho.devices.launchpadpro;
 
 import lombok.Getter;
+import net.perkowitz.issho.devices.GridColor;
 
 /**
  * Created by optic on 9/4/16.
  */
-public class Color {
+public class Color implements GridColor {
 
     public static Color OFF = Color.fromIndex(0);
     public static Color WHITE = Color.fromIndex(3);
