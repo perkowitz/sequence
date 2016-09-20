@@ -6,6 +6,7 @@ import net.perkowitz.issho.devices.GridButton;
 import net.perkowitz.issho.devices.GridDisplay;
 import net.perkowitz.issho.devices.GridListener;
 import net.perkowitz.issho.devices.GridPad;
+import net.perkowitz.issho.devices.launchpadpro.Color;
 import net.perkowitz.issho.hachi.models.Memory;
 
 /**
@@ -54,11 +55,13 @@ public class BasicModule implements Module, GridListener {
     /***** GridListener interface ****************************************/
 
     public void onPadPressed(GridPad pad, int velocity) {
-
+        display.setPad(pad, Color.fromIndex(0));
     }
+
     public void onPadReleased(GridPad pad) {
 
     }
+
     public void onButtonPressed(GridButton button, int velocity) {
 
     }

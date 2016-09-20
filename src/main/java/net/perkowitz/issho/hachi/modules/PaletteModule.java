@@ -1,6 +1,7 @@
 package net.perkowitz.issho.hachi.modules;
 
 import net.perkowitz.issho.devices.GridDisplay;
+import net.perkowitz.issho.devices.GridPad;
 import net.perkowitz.issho.devices.launchpadpro.Color;
 import net.perkowitz.issho.devices.launchpadpro.Pad;
 
@@ -22,6 +23,11 @@ public class PaletteModule extends BasicModule {
     @Override
     public void redraw() {
         palette();
+    }
+
+    @Override
+    public void onPadPressed(GridPad pad, int velocity) {
+        display.setPad(pad, Color.fromIndex(velocity));
     }
 
 

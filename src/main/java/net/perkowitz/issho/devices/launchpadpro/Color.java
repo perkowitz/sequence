@@ -41,6 +41,9 @@ public class Color implements GridColor {
         this.index = index;
     }
 
+    public String toString() {
+        return "Color:" + index;
+    }
 
     /***** static methods ********************************/
 
