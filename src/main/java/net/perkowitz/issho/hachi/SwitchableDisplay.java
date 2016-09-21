@@ -23,6 +23,12 @@ public class SwitchableDisplay implements GridDisplay {
 
     /***** GridDisplay implementation ***************************/
 
+    public void initialize() {
+        if (enabled) {
+            display.initialize();
+        }
+    }
+
     public void setPad(GridPad pad, GridColor color) {
         if (enabled) {
             display.setPad(pad, color);

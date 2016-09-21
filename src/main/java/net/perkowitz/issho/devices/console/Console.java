@@ -32,6 +32,8 @@ public class Console implements GridListener, GridDisplay {
 
     /***** GridDisplay implementation ************************************/
 
+    public void initialize() {}
+
     public void setPad(GridPad pad, GridColor color) {
         System.out.printf("[][][][] SetPad: %s, %s\n", pad, color);
     }

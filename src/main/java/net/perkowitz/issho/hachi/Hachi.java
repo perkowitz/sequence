@@ -34,7 +34,21 @@ public class Hachi {
     private static HachiController controller;
 
 
+    /**
+     * 1. get the midi devices
+     * 2. open them and create GridListeners attached to them
+     * 3. create each module, with its listeners and displays
+     * 4. create the HachiController
+     * 5. go into wait loop
+     * 6. HachiController shuts down when it receives exit
+     *
+     * @param args
+     * @throws Exception
+     */
     public static void main(String args[]) throws Exception {
+
+
+
 
         String propertyFile = null;
         if (args.length > 0) {
@@ -82,6 +96,7 @@ public class Hachi {
             System.out.println();
         }
 
+        controller.run();
 
     }
 

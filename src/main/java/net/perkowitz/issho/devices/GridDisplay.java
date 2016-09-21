@@ -5,6 +5,7 @@ package net.perkowitz.issho.devices;
  */
 public interface GridDisplay {
 
+    public void initialize();
     public void setPad(GridPad pad, GridColor color);
     public void setButton(GridButton button, GridColor color);
 

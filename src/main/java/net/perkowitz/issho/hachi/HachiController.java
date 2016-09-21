@@ -18,6 +18,7 @@ public class HachiController implements GridListener {
     private Module activeModule;
     private GridListener[] moduleListeners = null;
     private GridListener activeListener = null;
+    private GridDisplay display;
     private SwitchableDisplay[] displays;
 
 
@@ -25,6 +26,7 @@ public class HachiController implements GridListener {
 
         this.modules = modules;
         moduleListeners = new GridListener[modules.length];
+        this.display = display;
         displays = new SwitchableDisplay[modules.length];
         for (int i = 0; i < modules.length; i++) {
             moduleListeners[i] = modules[i].getGridListener();
@@ -34,6 +36,24 @@ public class HachiController implements GridListener {
         }
 
         selectModule(0);
+    }
+
+    public void run() {
+
+        display.initialize();
+
+        for (int i = 10; i >= 0; i--) {
+            try {
+                Thread.sleep(1000);
+                System.out.printf("%d\n", i);
+            } catch (Exception e) {
+
+            }
+        }
+
+        System.exit(0);
+
+
     }
 
     /***** private implementation ***************/
