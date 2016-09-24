@@ -312,7 +312,7 @@ public class LppRhythmDisplay implements RhythmDisplay {
 
     public void clearValue() {
         for (int b = 0; b < 8; b++) {
-            display.setButton(Button.at(Right, 7-b), COLOR_VALUE);
+            display.setButton(GridButton.at(Right, 7-b), COLOR_VALUE);
         }
     }
 
@@ -332,7 +332,7 @@ public class LppRhythmDisplay implements RhythmDisplay {
             if (b <= buttons) {
                 buttonColor = color;
             }
-            display.setButton(Button.at(Right, 7-b), buttonColor);
+            display.setButton(GridButton.at(Right, 7-b), buttonColor);
         }
 
     }

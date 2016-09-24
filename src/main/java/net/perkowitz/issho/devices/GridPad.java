@@ -7,8 +7,8 @@ import lombok.Getter;
  */
 public class GridPad {
 
-    @Getter private int x;
-    @Getter private int y;
+    @Getter private final int x;
+    @Getter private final int y;
 
     public GridPad(int x, int y) {
         this.x = x;

@@ -10,6 +10,8 @@ import javax.sound.midi.Receiver;
 import javax.sound.midi.ShortMessage;
 
 import static javax.sound.midi.ShortMessage.*;
+import static net.perkowitz.issho.devices.GridButton.Side.*;
+import static net.perkowitz.issho.devices.GridButton.Side.Top;
 
 /**
  * Created by optic on 9/3/16.
@@ -36,13 +38,13 @@ public class LaunchpadPro implements Receiver, GridDisplay {
             for (int x = 0; x < 8; x++) {
                 setPad(GridPad.at(x, y), color);
                 if (doButtons) {
-                    setButton(new Button(Button.Side.Top, x), color);
-                    setButton(new Button(Button.Side.Bottom, x), color);
+                    setButton(GridButton.at(GridButton.Side.Top, x), color);
+                    setButton(GridButton.at(GridButton.Side.Bottom, x), color);
                 }
             }
             if (doButtons) {
-                setButton(new Button(Button.Side.Left, y), color);
-                setButton(new Button(Button.Side.Right, y), color);
+                setButton(GridButton.at(GridButton.Side.Left, y), color);
+                setButton(GridButton.at(GridButton.Side.Right, y), color);
             }
         }
 
@@ -67,8 +69,7 @@ public class LaunchpadPro implements Receiver, GridDisplay {
     }
 
     public void setButton(GridButton button, GridColor color) {
-        Button lppButton = (Button) button;
-        cc(CHANNEL, lppButton.getCc(), color.getIndex());
+        cc(CHANNEL, buttonToCc(button), color.getIndex());
     }
 
 
@@ -122,7 +123,7 @@ public class LaunchpadPro implements Receiver, GridDisplay {
                     case CONTROL_CHANGE:
 //                        System.out.printf("MIDI CC: %d, %d, %d\n", shortMessage.getChannel(), shortMessage.getData1(), shortMessage.getData2());
                         if (listener != null) {
-                            Button button = Button.fromCC(shortMessage.getData1());
+                            GridButton button = ccToButton(shortMessage.getData1());
                             int velocity = shortMessage.getData2();
                             if (velocity == 0) {
                                 listener.onButtonReleased(button);
@@ -179,6 +180,42 @@ public class LaunchpadPro implements Receiver, GridDisplay {
         int y = 7 - (note / 10 - 1);
         return GridPad.at(x, y);
 
+    }
+
+    private int buttonToCc(GridButton button) {
+
+        GridButton.Side side = button.getSide();
+        int index = button.getIndex();
+        int flippedIndex = 7 - index;
+        switch (side) {
+            case Top:
+                return 90 + index + 1;
+            case Bottom:
+                return index + 1;
+            case Left:
+                return 10 + flippedIndex * 10;
+            case Right:
+                return 19 + flippedIndex * 10;
+            default:
+                return 100;
+        }
+
+    }
+
+    public static GridButton ccToButton(int cc) {
+
+        GridButton.Side side = Top;
+        int index = 0;
+
+        if (cc >= 10 && cc <= 89) {
+            index = 7 - (cc / 10 - 1);
+            side = (cc % 10 == 0) ? Left : Right;
+        } else {
+            index = cc % 10 - 1;
+            side = (cc < 10) ? Bottom : Top;
+        }
+
+        return GridButton.at(side, index);
     }
 
 

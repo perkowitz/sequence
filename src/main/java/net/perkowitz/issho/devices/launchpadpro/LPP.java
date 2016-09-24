@@ -1,5 +1,6 @@
 package net.perkowitz.issho.devices.launchpadpro;
 
+import net.perkowitz.issho.devices.GridButton;
 import net.perkowitz.issho.devices.GridPad;
 import net.perkowitz.sequence.MidiUtil;
 import org.apache.commons.lang3.StringUtils;
@@ -52,18 +53,18 @@ public class LPP {
         Color color = Color.fromIndex(9);
         for (int y = 0; y < 8; y++) {
             color = Color.fromIndex((int) (Math.random() * 127) + 1);
-            lpp.setButton(new Button(Left, y), color);
+            lpp.setButton(GridButton.at(Left, y), color);
             for (int x = 0; x < 8; x++) {
                 lpp.setPad(new GridPad(x, y), color);
             }
-            lpp.setButton(new Button(Right, y), color);
+            lpp.setButton(GridButton.at(Right, y), color);
         }
 
         color = Color.fromIndex((int) (Math.random() * 127) + 1);
         Color color2 = Color.fromIndex((int) (Math.random() * 127) + 1);
         for (int index = 0; index < 8; index++) {
-            lpp.setButton(new Button(Top, index), color);
-            lpp.setButton(new Button(Bottom, index), color2);
+            lpp.setButton(GridButton.at(Top, index), color);
+            lpp.setButton(GridButton.at(Bottom, index), color2);
         }
 
 

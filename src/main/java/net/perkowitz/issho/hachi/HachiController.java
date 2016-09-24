@@ -2,7 +2,6 @@ package net.perkowitz.issho.hachi;
 
 import com.google.common.collect.Lists;
 import net.perkowitz.issho.devices.*;
-import net.perkowitz.issho.devices.launchpadpro.Button;
 import net.perkowitz.issho.devices.launchpadpro.Color;
 import net.perkowitz.issho.hachi.modules.Module;
 
@@ -95,7 +94,7 @@ public class HachiController implements GridListener, Clockable {
 
         // modules
         for (int index = 0; index < modules.length; index++) {
-            GridButton button = Button.at(HachiUtil.MODULE_BUTTON_SIDE, index);
+            GridButton button = GridButton.at(HachiUtil.MODULE_BUTTON_SIDE, index);
             if (modules[index] == activeModule) {
                 display.setButton(button, selectedColor);
             } else {
@@ -104,7 +103,7 @@ public class HachiController implements GridListener, Clockable {
         }
 
         // exit button
-        GridButton button = Button.at(HachiUtil.MODULE_BUTTON_SIDE, 7);
+        GridButton button = GridButton.at(HachiUtil.MODULE_BUTTON_SIDE, 7);
         display.setButton(button, unselectedColor);
 
     }

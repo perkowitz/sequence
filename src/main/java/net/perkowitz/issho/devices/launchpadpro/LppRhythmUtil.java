@@ -56,18 +56,18 @@ public class LppRhythmUtil {
 
     public static Color COLOR_VALUE = Color.OFF;
 
-    public static Map<SequencerInterface.Mode, Button> modeButtonMap = Maps.newHashMap();
+    public static Map<SequencerInterface.Mode, GridButton> modeButtonMap = Maps.newHashMap();
     public static Map<SequencerInterface.Mode, GridPad> modePadMap = Maps.newHashMap();
     static {
-        modeButtonMap.put(SequencerInterface.Mode.PLAY, Button.at(GridButton.Side.Top, 3));
-        modeButtonMap.put(SequencerInterface.Mode.EXIT, Button.at(GridButton.Side.Top, 7));
-        modeButtonMap.put(SequencerInterface.Mode.SAVE, Button.at(GridButton.Side.Top, 4));
-        modeButtonMap.put(SequencerInterface.Mode.TEMPO, Button.at(GridButton.Side.Top, 2));
-        modeButtonMap.put(SequencerInterface.Mode.SEQUENCE, Button.at(GridButton.Side.Top, 5));
-        modeButtonMap.put(SequencerInterface.Mode.SETTINGS, Button.at(GridButton.Side.Top, 6));
+        modeButtonMap.put(SequencerInterface.Mode.PLAY, GridButton.at(GridButton.Side.Top, 3));
+        modeButtonMap.put(SequencerInterface.Mode.EXIT, GridButton.at(GridButton.Side.Top, 7));
+        modeButtonMap.put(SequencerInterface.Mode.SAVE, GridButton.at(GridButton.Side.Top, 4));
+        modeButtonMap.put(SequencerInterface.Mode.TEMPO, GridButton.at(GridButton.Side.Top, 2));
+        modeButtonMap.put(SequencerInterface.Mode.SEQUENCE, GridButton.at(GridButton.Side.Top, 5));
+        modeButtonMap.put(SequencerInterface.Mode.SETTINGS, GridButton.at(GridButton.Side.Top, 6));
 //        modeButtonMap.put(SequencerInterface.Mode.COPY, Button.UP);
 //        modeButtonMap.put(SequencerInterface.Mode.CLEAR, Button.DOWN);
-        modeButtonMap.put(SequencerInterface.Mode.PATTERN_EDIT, Button.at(GridButton.Side.Top, 0));
+        modeButtonMap.put(SequencerInterface.Mode.PATTERN_EDIT, GridButton.at(GridButton.Side.Top, 0));
 
         modePadMap.put(SequencerInterface.Mode.TRACK_MUTE, GridPad.at(0, MODE_ROW));
         modePadMap.put(SequencerInterface.Mode.TRACK_EDIT, GridPad.at(1, MODE_ROW));
