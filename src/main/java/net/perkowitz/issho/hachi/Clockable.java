@@ -7,7 +7,6 @@ public interface Clockable {
 
     public void start(boolean restart);
     public void stop();
-    public void advance();
-    public int getClockDivider();
+    public void tick();
 
 }

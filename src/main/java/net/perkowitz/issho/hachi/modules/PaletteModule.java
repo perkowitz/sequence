@@ -1,9 +1,7 @@
 package net.perkowitz.issho.hachi.modules;
 
-import net.perkowitz.issho.devices.GridDisplay;
 import net.perkowitz.issho.devices.GridPad;
 import net.perkowitz.issho.devices.launchpadpro.Color;
-import net.perkowitz.issho.devices.launchpadpro.Pad;
 
 /**
  * Created by optic on 9/12/16.
@@ -41,7 +39,7 @@ public class PaletteModule extends BasicModule {
         }
         for (int y = 0; y < 8; y++) {
             for (int x = 0; x < 8; x++) {
-                this.display.setPad(new Pad(x, 7-y), Color.fromIndex(c));
+                this.display.setPad(GridPad.at(x, 7-y), Color.fromIndex(c));
                 c++;
             }
         }

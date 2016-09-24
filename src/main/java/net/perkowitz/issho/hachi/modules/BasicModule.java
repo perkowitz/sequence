@@ -27,10 +27,6 @@ public class BasicModule implements Module, GridListener {
 
     }
 
-    public void setDisplay(GridDisplay display) {
-        this.display = display;
-    }
-
     public GridListener getGridListener() {
         return this;
     }

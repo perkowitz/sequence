@@ -5,5 +5,5 @@ package net.perkowitz.issho.hachi;
  */
 public interface Triggerable {
 
-    public void advance(boolean reset, boolean restart);
+    public void trigger(boolean reset, boolean restart);
 }

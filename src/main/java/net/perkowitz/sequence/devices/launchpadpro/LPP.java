@@ -66,17 +66,6 @@ public class LPP {
         lpp.initialize();
 
         palette(lpp, false);
-//        palette(lpp, Color.oranges);
-//        lpp.setPads(Sprites.hachi, Color.DIM_GREEN);
-
-
-//        int s = Sprites.sprites.length;
-//        for (int i = 0; i < 16; i++) {
-//            lpp.initialize();
-//            color = (int)(Math.random() * 127) + 1;
-//            lpp.setPads(Sprites.sprites[i % s], color);
-//            Thread.sleep(250);
-//        }
 
         int[] colors = new int[] { 64, 66, 67, 68, 71, 78, 79, 84, 87, 90, 91, 92, 95, 103, 104, 112, 115, 116, 117, 118, 119, 120, 122, 123};
 

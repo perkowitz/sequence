@@ -1,6 +1,7 @@
 package net.perkowitz.issho.devices.launchpadpro;
 
 
+import lombok.Setter;
 import net.perkowitz.issho.devices.*;
 
 import javax.sound.midi.InvalidMidiDataException;
@@ -20,7 +21,7 @@ public class LaunchpadPro implements Receiver, GridDisplay {
     private static int CHANNEL = 15;
 
     private Receiver receiver;
-    private GridListener listener;
+    @Setter private GridListener listener;
 
     public LaunchpadPro(Receiver receiver, GridListener listener) {
         this.receiver = receiver;
@@ -33,7 +34,7 @@ public class LaunchpadPro implements Receiver, GridDisplay {
     public void initialize(Color color, boolean doButtons) {
         for (int y = 0; y < 8; y++) {
             for (int x = 0; x < 8; x++) {
-                setPad(new Pad(x, y), color);
+                setPad(GridPad.at(x, y), color);
                 if (doButtons) {
                     setButton(new Button(Button.Side.Top, x), color);
                     setButton(new Button(Button.Side.Bottom, x), color);
@@ -55,15 +56,14 @@ public class LaunchpadPro implements Receiver, GridDisplay {
         initialize(Color.OFF, true);
     }
 
-    public void setPads(Pad[] pads, Color color) {
-        for (Pad pad : pads) {
+    public void setPads(GridPad[] pads, Color color) {
+        for (GridPad pad : pads) {
             setPad(pad, color);
         }
     }
 
     public void setPad(GridPad pad, GridColor color) {
-        Pad lppPad = (Pad) pad;
-        note(CHANNEL, lppPad.getNote(), color.getIndex());
+        note(CHANNEL, padToNote(pad), color.getIndex());
     }
 
     public void setButton(GridButton button, GridColor color) {
@@ -103,7 +103,7 @@ public class LaunchpadPro implements Receiver, GridDisplay {
                     case NOTE_ON:
 //                        System.out.printf("NOTE ON: %d, %d, %d\n", shortMessage.getChannel(), shortMessage.getData1(), shortMessage.getData2());
                         if (listener != null) {
-                            Pad pad = Pad.fromNote(shortMessage.getData1());
+                            GridPad pad = noteToPad(shortMessage.getData1());
                             int velocity = shortMessage.getData2();
                             if (velocity == 0) {
                                 listener.onPadReleased(pad);
@@ -115,7 +115,7 @@ public class LaunchpadPro implements Receiver, GridDisplay {
                     case NOTE_OFF:
 //                        System.out.printf("NOTE OFF: %d, %d, %d\n", shortMessage.getChannel(), shortMessage.getData1(), shortMessage.getData2());
                         if (listener != null) {
-                            Pad pad = Pad.fromNote(shortMessage.getData1());
+                            GridPad pad = noteToPad(shortMessage.getData1());
                             listener.onPadReleased(pad);
                         }
                         break;
@@ -167,6 +167,17 @@ public class LaunchpadPro implements Receiver, GridDisplay {
         } catch (InvalidMidiDataException e) {
             System.err.println(e);
         }
+
+    }
+
+    private int padToNote(GridPad pad) {
+        return (7-pad.getY()) * 10 + pad.getX() + 11;
+    }
+
+    private GridPad noteToPad(int note) {
+        int x = note % 10 - 1;
+        int y = 7 - (note / 10 - 1);
+        return GridPad.at(x, y);
 
     }
 

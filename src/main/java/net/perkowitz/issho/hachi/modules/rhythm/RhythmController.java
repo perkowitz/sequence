@@ -1,4 +1,4 @@
-package net.perkowitz.issho.hachi.modules;
+package net.perkowitz.issho.hachi.modules.rhythm;
 
 
 /**

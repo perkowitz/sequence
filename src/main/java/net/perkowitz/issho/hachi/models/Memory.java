@@ -4,14 +4,14 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import lombok.Getter;
 import lombok.Setter;
-import net.perkowitz.issho.hachi.modules.RhythmInterface;
+import net.perkowitz.issho.hachi.modules.rhythm.RhythmInterface;
 
 import java.util.List;
 import java.util.Map;
 
-import static net.perkowitz.issho.hachi.modules.RhythmInterface.Switch.INTERNAL_CLOCK_ENABLED;
-import static net.perkowitz.issho.hachi.modules.RhythmInterface.Switch.MIDI_CLOCK_ENABLED;
-import static net.perkowitz.issho.hachi.modules.RhythmInterface.Switch.TRIGGER_ENABLED;
+import static net.perkowitz.issho.hachi.modules.rhythm.RhythmInterface.Switch.INTERNAL_CLOCK_ENABLED;
+import static net.perkowitz.issho.hachi.modules.rhythm.RhythmInterface.Switch.MIDI_CLOCK_ENABLED;
+import static net.perkowitz.issho.hachi.modules.rhythm.RhythmInterface.Switch.TRIGGER_ENABLED;
 
 
 /**

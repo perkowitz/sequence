@@ -1,12 +1,21 @@
 package net.perkowitz.issho.devices;
 
+import lombok.Getter;
+
 /**
  * Created by optic on 9/3/16.
  */
-public interface GridPad {
+public class GridPad {
 
-    public int getX();
-    public int getY();
-//    public static GridPad at(int x, int y);
+    @Getter private int x;
+    @Getter private int y;
 
+    public GridPad(int x, int y) {
+        this.x = x;
+        this.y = y;
+    }
+
+    public static GridPad at(int x, int y) {
+        return new GridPad(x, y);
+    }
 }

@@ -1,6 +1,7 @@
-package net.perkowitz.issho.hachi.modules;
+package net.perkowitz.issho.hachi.modules.rhythm;
 
 
+import net.perkowitz.issho.devices.GridDisplay;
 import net.perkowitz.issho.hachi.models.*;
 
 import java.util.Map;
@@ -20,6 +21,8 @@ public interface RhythmDisplay {
     public void initialize();
     public void displayAll(Memory memory, Map<RhythmInterface.Mode, Boolean> modeIsActiveMap);
     public void displayHelp();
+
+    public void setDisplay(GridDisplay display);
 
     public void displayModule(RhythmInterface.Module module, Memory memory, Map<RhythmInterface.Mode, Boolean> modeIsActiveMap, int currentFileIndex);
 

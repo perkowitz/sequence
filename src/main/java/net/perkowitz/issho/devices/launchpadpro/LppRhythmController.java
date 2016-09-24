@@ -4,7 +4,8 @@ import com.google.common.collect.Sets;
 import net.perkowitz.issho.devices.GridButton;
 import net.perkowitz.issho.devices.GridListener;
 import net.perkowitz.issho.devices.GridPad;
-import net.perkowitz.issho.hachi.modules.RhythmInterface;
+import net.perkowitz.issho.hachi.modules.rhythm.RhythmController;
+import net.perkowitz.issho.hachi.modules.rhythm.RhythmInterface;
 import net.perkowitz.sequence.devices.launchpadpro.LaunchpadProUtil;
 
 import java.util.Set;
@@ -14,7 +15,7 @@ import static net.perkowitz.sequence.devices.launchpadpro.LaunchpadProUtil.*;
 /**
  * Created by mperkowi on 7/15/16.
  */
-public class LppRhythmController implements GridListener {
+public class LppRhythmController implements GridListener, RhythmController {
 
     private RhythmInterface sequencer = null;
 

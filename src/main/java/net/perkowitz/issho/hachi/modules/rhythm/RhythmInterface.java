@@ -1,7 +1,7 @@
-package net.perkowitz.issho.hachi.modules;
+package net.perkowitz.issho.hachi.modules.rhythm;
 
 
-import static net.perkowitz.issho.hachi.modules.RhythmInterface.Mode.*;
+import static net.perkowitz.issho.hachi.modules.rhythm.RhythmInterface.Mode.*;
 
 /**
  * Created by mperkowi on 7/15/16.

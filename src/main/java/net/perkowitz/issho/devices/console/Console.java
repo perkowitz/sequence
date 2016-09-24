@@ -1,8 +1,6 @@
 package net.perkowitz.issho.devices.console;
 
 import net.perkowitz.issho.devices.*;
-import net.perkowitz.issho.devices.launchpadpro.Button;
-import net.perkowitz.issho.devices.launchpadpro.Pad;
 
 /**
  * Created by mperkowi on 9/20/16.

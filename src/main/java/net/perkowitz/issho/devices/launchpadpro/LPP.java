@@ -1,5 +1,6 @@
 package net.perkowitz.issho.devices.launchpadpro;
 
+import net.perkowitz.issho.devices.GridPad;
 import net.perkowitz.sequence.MidiUtil;
 import org.apache.commons.lang3.StringUtils;
 
@@ -53,7 +54,7 @@ public class LPP {
             color = Color.fromIndex((int) (Math.random() * 127) + 1);
             lpp.setButton(new Button(Left, y), color);
             for (int x = 0; x < 8; x++) {
-                lpp.setPad(new Pad(x, y), color);
+                lpp.setPad(new GridPad(x, y), color);
             }
             lpp.setButton(new Button(Right, y), color);
         }
@@ -70,22 +71,8 @@ public class LPP {
         lpp.initialize();
 
         palette(lpp, false);
-//        palette(lpp, Color.oranges);
-//        lpp.setPads(Sprites.hachi, Color.DIM_GREEN);
-
-
-//        int s = Sprites.sprites.length;
-//        for (int i = 0; i < 16; i++) {
-//            lpp.initialize();
-//            color = (int)(Math.random() * 127) + 1;
-//            lpp.setPads(Sprites.sprites[i % s], color);
-//            Thread.sleep(250);
-//        }
 
         int[] colors = new int[] { 64, 66, 67, 68, 71, 78, 79, 84, 87, 90, 91, 92, 95, 103, 104, 112, 115, 116, 117, 118, 119, 120, 122, 123};
-
-//        startTimer();
-//        stop.await();
 
         lppInput.close();
         lppOutput.close();
@@ -103,7 +90,7 @@ public class LPP {
         }
         for (int y = 0; y < 8; y++) {
             for (int x = 0; x < 8; x++) {
-                lpp.setPad(new Pad(x, 7-y), Color.fromIndex(c));
+                lpp.setPad(new GridPad(x, 7-y), Color.fromIndex(c));
                 c++;
             }
         }
@@ -116,7 +103,7 @@ public class LPP {
         for (int y = 0; y < 8; y++) {
             for (int x = 0; x < 8; x++) {
                 int index = colors[c % colors.length];
-                lpp.setPad(new Pad(x, y), Color.fromIndex(index));
+                lpp.setPad(new GridPad(x, y), Color.fromIndex(index));
                 c++;
             }
         }
