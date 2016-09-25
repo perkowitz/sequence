@@ -2,7 +2,7 @@ package net.perkowitz.issho.devices.launchpadpro;
 
 import com.google.common.collect.Maps;
 import net.perkowitz.issho.devices.*;
-import net.perkowitz.sequence.SequencerInterface;
+import net.perkowitz.issho.hachi.modules.rhythm.RhythmInterface;
 
 import java.util.Map;
 
@@ -56,32 +56,30 @@ public class LppRhythmUtil {
 
     public static Color COLOR_VALUE = Color.OFF;
 
-    public static Map<SequencerInterface.Mode, GridButton> modeButtonMap = Maps.newHashMap();
-    public static Map<SequencerInterface.Mode, GridPad> modePadMap = Maps.newHashMap();
+    public static Map<RhythmInterface.Mode, GridButton> modeButtonMap = Maps.newHashMap();
+    public static Map<RhythmInterface.Mode, GridPad> modePadMap = Maps.newHashMap();
     static {
-        modeButtonMap.put(SequencerInterface.Mode.PLAY, GridButton.at(GridButton.Side.Top, 3));
-        modeButtonMap.put(SequencerInterface.Mode.EXIT, GridButton.at(GridButton.Side.Top, 7));
-        modeButtonMap.put(SequencerInterface.Mode.SAVE, GridButton.at(GridButton.Side.Top, 4));
-        modeButtonMap.put(SequencerInterface.Mode.TEMPO, GridButton.at(GridButton.Side.Top, 2));
-        modeButtonMap.put(SequencerInterface.Mode.SEQUENCE, GridButton.at(GridButton.Side.Top, 5));
-        modeButtonMap.put(SequencerInterface.Mode.SETTINGS, GridButton.at(GridButton.Side.Top, 6));
-//        modeButtonMap.put(SequencerInterface.Mode.COPY, Button.UP);
-//        modeButtonMap.put(SequencerInterface.Mode.CLEAR, Button.DOWN);
-        modeButtonMap.put(SequencerInterface.Mode.PATTERN_EDIT, GridButton.at(GridButton.Side.Top, 0));
+        modeButtonMap.put(RhythmInterface.Mode.PATTERN_EDIT, GridButton.at(GridButton.Side.Left, 0));
+        modeButtonMap.put(RhythmInterface.Mode.TEMPO, GridButton.at(GridButton.Side.Left, 2));
+        modeButtonMap.put(RhythmInterface.Mode.PLAY, GridButton.at(GridButton.Side.Left, 3));
+        modeButtonMap.put(RhythmInterface.Mode.SAVE, GridButton.at(GridButton.Side.Left, 4));
+        modeButtonMap.put(RhythmInterface.Mode.SEQUENCE, GridButton.at(GridButton.Side.Left, 5));
+        modeButtonMap.put(RhythmInterface.Mode.SETTINGS, GridButton.at(GridButton.Side.Left, 6));
+        modeButtonMap.put(RhythmInterface.Mode.EXIT, GridButton.at(GridButton.Side.Left, 7));
 
-        modePadMap.put(SequencerInterface.Mode.TRACK_MUTE, GridPad.at(0, MODE_ROW));
-        modePadMap.put(SequencerInterface.Mode.TRACK_EDIT, GridPad.at(1, MODE_ROW));
-        modePadMap.put(SequencerInterface.Mode.STEP_MUTE, GridPad.at(4, MODE_ROW));
-        modePadMap.put(SequencerInterface.Mode.STEP_VELOCITY, GridPad.at(5, MODE_ROW));
-        modePadMap.put(SequencerInterface.Mode.STEP_JUMP, GridPad.at(6, MODE_ROW));
-        modePadMap.put(SequencerInterface.Mode.STEP_PLAY, GridPad.at(7, MODE_ROW));
+        modePadMap.put(RhythmInterface.Mode.TRACK_MUTE, GridPad.at(0, MODE_ROW));
+        modePadMap.put(RhythmInterface.Mode.TRACK_EDIT, GridPad.at(1, MODE_ROW));
+        modePadMap.put(RhythmInterface.Mode.STEP_MUTE, GridPad.at(4, MODE_ROW));
+        modePadMap.put(RhythmInterface.Mode.STEP_VELOCITY, GridPad.at(5, MODE_ROW));
+        modePadMap.put(RhythmInterface.Mode.STEP_JUMP, GridPad.at(6, MODE_ROW));
+        modePadMap.put(RhythmInterface.Mode.STEP_PLAY, GridPad.at(7, MODE_ROW));
     }
 
-    public static Map<SequencerInterface.Switch, GridPad> switchPadMap = Maps.newHashMap();
+    public static Map<RhythmInterface.Switch, GridPad> switchPadMap = Maps.newHashMap();
     static {
-        switchPadMap.put(SequencerInterface.Switch.INTERNAL_CLOCK_ENABLED, GridPad.at(5, SWITCHES_ROW));
-        switchPadMap.put(SequencerInterface.Switch.MIDI_CLOCK_ENABLED, GridPad.at(6, SWITCHES_ROW));
-        switchPadMap.put(SequencerInterface.Switch.TRIGGER_ENABLED, GridPad.at(7, SWITCHES_ROW));
+        switchPadMap.put(RhythmInterface.Switch.INTERNAL_CLOCK_ENABLED, GridPad.at(5, SWITCHES_ROW));
+        switchPadMap.put(RhythmInterface.Switch.MIDI_CLOCK_ENABLED, GridPad.at(6, SWITCHES_ROW));
+        switchPadMap.put(RhythmInterface.Switch.TRIGGER_ENABLED, GridPad.at(7, SWITCHES_ROW));
     }
 
 

@@ -6,7 +6,7 @@ import net.perkowitz.issho.devices.launchpadpro.LaunchpadPro;
 import net.perkowitz.issho.devices.launchpadpro.LppRhythmController;
 import net.perkowitz.issho.devices.launchpadpro.LppRhythmDisplay;
 import net.perkowitz.issho.hachi.modules.*;
-import net.perkowitz.issho.hachi.modules.rhythm.Rhythm;
+import net.perkowitz.issho.hachi.modules.rhythm.RhythmModule;
 import net.perkowitz.issho.hachi.modules.rhythm.RhythmController;
 import net.perkowitz.issho.hachi.modules.rhythm.RhythmDisplay;
 import net.perkowitz.issho.util.MidiUtil;
@@ -130,7 +130,7 @@ public class Hachi {
 
         RhythmController rhythmController = new LppRhythmController();
         RhythmDisplay rhythmDisplay = new LppRhythmDisplay(launchpadPro);
-        Module rhythm = new Rhythm(rhythmController, rhythmDisplay, controllerTransmitter, controllerReceiver);
+        Module rhythm = new RhythmModule(rhythmController, rhythmDisplay, controllerTransmitter, controllerReceiver);
 
         return rhythm;
     }

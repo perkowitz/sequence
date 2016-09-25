@@ -5,6 +5,7 @@ import com.google.common.collect.Sets;
 import com.google.common.io.Files;
 import net.perkowitz.issho.devices.GridDisplay;
 import net.perkowitz.issho.devices.GridListener;
+import net.perkowitz.issho.hachi.Clockable;
 import net.perkowitz.issho.hachi.models.*;
 import net.perkowitz.issho.hachi.modules.Module;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -25,10 +26,9 @@ import static net.perkowitz.issho.hachi.modules.rhythm.RhythmInterface.ValueMode
 /**
  * Created by optic on 7/8/16.
  */
-public class Rhythm implements Module, RhythmInterface {
+public class RhythmModule implements Module, RhythmInterface, Clockable {
 
     public enum StepMode { MUTE, VELOCITY, JUMP, PLAY }
-    private static final int DEFAULT_TIMER = 125;
     private static final int VELOCITY_MIN = 0;
     private static final int VELOCITY_MAX = 128;
     private static final int TEMPO_MIN = 100;
@@ -76,7 +76,7 @@ public class Rhythm implements Module, RhythmInterface {
 
     /***** constructor *********************************************************************/
 
-    public Rhythm(RhythmController controller, RhythmDisplay rhythmDisplay, Transmitter inputTransmitter, Receiver outputReceiver) {
+    public RhythmModule(RhythmController controller, RhythmDisplay rhythmDisplay, Transmitter inputTransmitter, Receiver outputReceiver) {
 
         // set up controller and rhythmDisplay
         this.controller = controller;
@@ -104,7 +104,7 @@ public class Rhythm implements Module, RhythmInterface {
     }
 
 
-    /***** Rhythm interface *********************************************************************/
+    /***** RhythmModule interface *********************************************************************/
 
 
     public void redraw() {
@@ -628,6 +628,33 @@ public class Rhythm implements Module, RhythmInterface {
         }
 
     }
+
+
+    /***** Clockable implementation ****************************************/
+
+    public void start(boolean restart) {
+        if (restart) {
+        }
+    }
+
+    public void stop() {
+    }
+
+    public void tick() {
+//        if (playing && memory.isSet(Switch.INTERNAL_CLOCK_ENABLED)) {
+//            boolean andReset = false;
+//            if (totalStepCount % Track.getStepCount() == 0) {
+//                andReset = true;
+//            }
+//            advance(andReset);
+//        }
+        boolean andReset = false;
+        if (totalStepCount % Track.getStepCount() == 0) {
+            andReset = true;
+        }
+        advance(andReset);
+    }
+
 
 
 }
